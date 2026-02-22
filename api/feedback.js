@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  var token = process.env.GITHUB_PAT_RANDROID_DEV;
+  var token = process.env.GITHUB_PAT_Randroid_DEV;
   if (!token) {
     return res.status(500).json({ error: 'Server misconfigured' });
   }
