@@ -17,8 +17,8 @@
   --text-primary: #e8e8ed;
   --text-secondary: #9898a8;
   --text-muted: #5c5c6e;
-  --accent: #6c5ce7;
-  --accent-glow: #a29bfe;
+  --accent: #e74c3c;
+  --accent-glow: #ff6b6b;
   --accent-secondary: #00cec9;
   --accent-warm: #fd79a8;
   --accent-gold: #fdcb6e;
@@ -28,7 +28,7 @@
   --radius-sm: 10px;
   --radius-lg: 24px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.15);
+  --shadow-glow: 0 0 40px rgba(231, 76, 60, 0.15);
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -175,8 +175,8 @@ body::before {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(108, 92, 231, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(108, 92, 231, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(231, 76, 60, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(231, 76, 60, 0.05) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 70%);
@@ -234,8 +234,8 @@ body::before {
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 1rem;
-  background: rgba(108, 92, 231, 0.1);
-  border: 1px solid rgba(108, 92, 231, 0.3);
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 100px;
   font-size: 0.8rem;
   color: var(--accent-glow);
@@ -530,13 +530,13 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 30px rgba(108, 92, 231, 0.4);
+  box-shadow: 0 0 30px rgba(231, 76, 60, 0.4);
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .embed-placeholder:hover .play-btn {
   transform: scale(1.1);
-  box-shadow: 0 0 50px rgba(108, 92, 231, 0.6);
+  box-shadow: 0 0 50px rgba(231, 76, 60, 0.6);
 }
 
 .play-btn svg {
@@ -566,9 +566,9 @@ body::before {
   font-size: 0.7rem;
   font-family: var(--font-mono);
   font-weight: 500;
-  background: rgba(108, 92, 231, 0.1);
+  background: rgba(231, 76, 60, 0.1);
   color: var(--accent-glow);
-  border: 1px solid rgba(108, 92, 231, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.15);
 }
 
 .tech-tag.teal {
@@ -747,8 +747,8 @@ body::before {
 }
 
 .featured-inner {
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(0, 206, 201, 0.1));
-  border: 1px solid rgba(108, 92, 231, 0.25);
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(0, 206, 201, 0.1));
+  border: 1px solid rgba(231, 76, 60, 0.25);
   border-radius: var(--radius-lg);
   padding: 4rem;
   text-align: center;
@@ -761,8 +761,8 @@ body::before {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(108, 92, 231, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(108, 92, 231, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(231, 76, 60, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(231, 76, 60, 0.06) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -803,7 +803,7 @@ body::before {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.35);
+  box-shadow: 0 8px 24px rgba(231, 76, 60, 0.35);
   color: white;
 }
 
@@ -964,7 +964,7 @@ body::before {
 
 .blog-card:hover .blog-card-date-pip {
   background: var(--accent);
-  box-shadow: 0 0 12px rgba(108, 92, 231, 0.5);
+  box-shadow: 0 0 12px rgba(231, 76, 60, 0.5);
 }
 
 .blog-card-date {
@@ -1209,7 +1209,7 @@ body::before {
   border-left: 3px solid var(--accent);
   padding: 1rem 1.5rem;
   margin: 1.5rem 0;
-  background: rgba(108, 92, 231, 0.06);
+  background: rgba(231, 76, 60, 0.06);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   font-size: 1.05rem;
   color: var(--text-primary);
@@ -1219,7 +1219,7 @@ body::before {
 .blog-reader-content code {
   font-family: var(--font-mono);
   font-size: 0.9em;
-  background: rgba(108, 92, 231, 0.1);
+  background: rgba(231, 76, 60, 0.1);
   padding: 0.15em 0.4em;
   border-radius: 4px;
   color: var(--accent-glow);
@@ -1268,20 +1268,20 @@ body::before {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 1px solid rgba(108, 92, 231, 0.4);
+  border: 1px solid rgba(231, 76, 60, 0.4);
   background: var(--accent);
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
+  box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .fab:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 28px rgba(108, 92, 231, 0.55);
+  box-shadow: 0 6px 28px rgba(231, 76, 60, 0.55);
 }
 
 .fab:active {
@@ -1331,7 +1331,7 @@ body::before {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 40px rgba(108, 92, 231, 0.08);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 40px rgba(231, 76, 60, 0.08);
   opacity: 0;
   transform: translateY(16px) scale(0.95);
   transform-origin: bottom right;
@@ -1387,7 +1387,7 @@ body::before {
 .feedback-input:focus,
 .feedback-textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
 }
 
 .feedback-textarea {
@@ -1414,7 +1414,7 @@ body::before {
 
 .feedback-submit:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.35);
+  box-shadow: 0 4px 16px rgba(231, 76, 60, 0.35);
 }
 
 .feedback-submit:active {
