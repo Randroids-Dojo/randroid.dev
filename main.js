@@ -178,23 +178,20 @@
   var blogReaderClose = document.getElementById('blogReaderClose');
   var blogCards = document.querySelectorAll('.blog-card[data-post]');
 
-  blogCards.forEach(function (card) {
-    card.addEventListener('click', function () {
-      var postId = card.getAttribute('data-post');
-      var template = document.getElementById(postId);
-      if (!template) return;
+  function openBlogPost(postId) {
+    var template = document.getElementById(postId);
+    if (!template) return;
 
-      blogReaderContent.innerHTML = template.innerHTML;
-      blogReader.classList.add('open');
-      document.body.style.overflow = 'hidden';
+    blogReaderContent.innerHTML = template.innerHTML;
+    blogReader.classList.add('open');
+    document.body.style.overflow = 'hidden';
 
-      // Scroll the reader panel back to top
-      var scrollEl = blogReader.querySelector('.blog-reader-scroll');
-      if (scrollEl) scrollEl.scrollTop = 0;
-    });
-  });
+    // Scroll the reader panel back to top
+    var scrollEl = blogReader.querySelector('.blog-reader-scroll');
+    if (scrollEl) scrollEl.scrollTop = 0;
+  }
 
-  function closeBlogReader() {
+  function closeBlogReaderUI() {
     blogReader.classList.remove('open');
     document.body.style.overflow = '';
     // Wait for close animation to clear content
@@ -205,6 +202,22 @@
     }, 500);
   }
 
+  blogCards.forEach(function (card) {
+    card.addEventListener('click', function () {
+      var postId = card.getAttribute('data-post');
+      openBlogPost(postId);
+      history.pushState(null, '', '#blog/' + postId);
+    });
+  });
+
+  function closeBlogReader() {
+    if (location.hash.indexOf('#blog/') === 0) {
+      history.back();
+    } else {
+      closeBlogReaderUI();
+    }
+  }
+
   blogReaderClose.addEventListener('click', closeBlogReader);
   blogReaderBackdrop.addEventListener('click', closeBlogReader);
 
@@ -213,6 +226,22 @@
       closeBlogReader();
     }
   });
+
+  // Handle browser back/forward for blog post deep links
+  window.addEventListener('popstate', function () {
+    var match = location.hash.match(/^#blog\/(post-\d+)$/);
+    if (match) {
+      openBlogPost(match[1]);
+    } else if (blogReader.classList.contains('open')) {
+      closeBlogReaderUI();
+    }
+  });
+
+  // Open blog post from URL hash on initial page load
+  var initialMatch = location.hash.match(/^#blog\/(post-\d+)$/);
+  if (initialMatch) {
+    openBlogPost(initialMatch[1]);
+  }
 
   // --- Mouse glow effect on story cards ---
   storyCards.forEach(function (card) {
