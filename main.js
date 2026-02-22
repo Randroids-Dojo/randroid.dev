@@ -274,6 +274,11 @@
     }
   });
 
+  var GITHUB_TOKEN = 'REPLACE_WITH_FINE_GRAINED_PAT';
+  var GITHUB_REPO = 'Randroids-Dojo/randroid.dev';
+  var feedbackSubmit = document.getElementById('feedbackSubmit');
+  var feedbackSuccess = document.getElementById('feedbackSuccess');
+
   feedbackForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var name = document.getElementById('feedbackName').value.trim();
@@ -283,17 +288,57 @@
     var title = 'Site Feedback' + (name ? ' from ' + name : '');
     var body = message + (name ? '\n\n— ' + name : '');
 
-    var url = 'https://github.com/Randroids-Dojo/randroid.dev/issues/new'
-      + '?title=' + encodeURIComponent(title)
-      + '&body=' + encodeURIComponent(body)
-      + '&labels=' + encodeURIComponent('feedback');
+    // Show sending state
+    feedbackSubmit.disabled = true;
+    feedbackSubmit.classList.add('sending');
 
-    window.open(url, '_blank', 'noopener');
+    fetch('https://api.github.com/repos/' + GITHUB_REPO + '/issues', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': 'Bearer ' + GITHUB_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: title,
+        body: body,
+        labels: ['feedback']
+      })
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('GitHub API returned ' + res.status);
+      return res.json();
+    })
+    .then(function () {
+      // Show success state
+      feedbackForm.style.display = 'none';
+      feedbackSuccess.classList.add('visible');
+      feedbackForm.reset();
 
-    // Reset form and close panel
-    feedbackForm.reset();
-    fab.classList.remove('open');
-    feedbackPanel.classList.remove('open');
+      // Reset after a delay
+      setTimeout(function () {
+        fab.classList.remove('open');
+        feedbackPanel.classList.remove('open');
+        // Reset states after close animation
+        setTimeout(function () {
+          feedbackForm.style.display = '';
+          feedbackSuccess.classList.remove('visible');
+          feedbackSubmit.disabled = false;
+          feedbackSubmit.classList.remove('sending');
+        }, 350);
+      }, 2000);
+    })
+    .catch(function () {
+      feedbackSubmit.disabled = false;
+      feedbackSubmit.classList.remove('sending');
+      feedbackSubmit.classList.add('error');
+      var label = feedbackSubmit.querySelector('.feedback-submit-label');
+      label.textContent = 'Failed — try again';
+      setTimeout(function () {
+        feedbackSubmit.classList.remove('error');
+        label.textContent = 'Send Feedback';
+      }, 3000);
+    });
   });
 
   // --- Mouse glow effect on story cards ---
