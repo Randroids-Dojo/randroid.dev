@@ -736,6 +736,7 @@ body::before {
 .lang-swift { background: #F05138; }
 .lang-typescript { background: #3178C6; }
 .lang-csharp { background: #68217A; }
+.lang-cpp { background: #f34b7d; }
 .lang-shell { background: #89e051; }
 .lang-html { background: #e34c26; }
 
