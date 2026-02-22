@@ -274,8 +274,6 @@
     }
   });
 
-  var GITHUB_TOKEN = 'REPLACE_WITH_FINE_GRAINED_PAT';
-  var GITHUB_REPO = 'Randroids-Dojo/randroid.dev';
   var feedbackSubmit = document.getElementById('feedbackSubmit');
   var feedbackSuccess = document.getElementById('feedbackSuccess');
 
@@ -292,18 +290,10 @@
     feedbackSubmit.disabled = true;
     feedbackSubmit.classList.add('sending');
 
-    fetch('https://api.github.com/repos/' + GITHUB_REPO + '/issues', {
+    fetch('/api/feedback', {
       method: 'POST',
-      headers: {
-        'Accept': 'application/vnd.github+json',
-        'Authorization': 'Bearer ' + GITHUB_TOKEN,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title: title,
-        body: body,
-        labels: ['feedback']
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, body: body })
     })
     .then(function (res) {
       if (!res.ok) throw new Error('GitHub API returned ' + res.status);
