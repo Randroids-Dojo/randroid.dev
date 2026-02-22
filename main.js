@@ -243,6 +243,94 @@
     openBlogPost(initialMatch[1]);
   }
 
+  // --- Floating feedback button ---
+  var fab = document.getElementById('fab');
+  var feedbackPanel = document.getElementById('feedbackPanel');
+  var feedbackForm = document.getElementById('feedbackForm');
+
+  function toggleFeedback() {
+    var isOpen = fab.classList.toggle('open');
+    feedbackPanel.classList.toggle('open', isOpen);
+    if (isOpen) {
+      document.getElementById('feedbackMessage').focus();
+    }
+  }
+
+  fab.addEventListener('click', toggleFeedback);
+
+  // Close feedback panel when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!fab.contains(e.target) && !feedbackPanel.contains(e.target) && feedbackPanel.classList.contains('open')) {
+      fab.classList.remove('open');
+      feedbackPanel.classList.remove('open');
+    }
+  });
+
+  // Close feedback panel on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && feedbackPanel.classList.contains('open')) {
+      fab.classList.remove('open');
+      feedbackPanel.classList.remove('open');
+    }
+  });
+
+  var feedbackSubmit = document.getElementById('feedbackSubmit');
+  var feedbackSuccess = document.getElementById('feedbackSuccess');
+
+  feedbackForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('feedbackName').value.trim();
+    var message = document.getElementById('feedbackMessage').value.trim();
+    if (!message) return;
+
+    var title = 'Site Feedback' + (name ? ' from ' + name : '');
+    var body = message + (name ? '\n\n— ' + name : '');
+
+    // Show sending state
+    feedbackSubmit.disabled = true;
+    feedbackSubmit.classList.add('sending');
+
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, body: body })
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('GitHub API returned ' + res.status);
+      return res.json();
+    })
+    .then(function () {
+      // Show success state
+      feedbackForm.style.display = 'none';
+      feedbackSuccess.classList.add('visible');
+      feedbackForm.reset();
+
+      // Reset after a delay
+      setTimeout(function () {
+        fab.classList.remove('open');
+        feedbackPanel.classList.remove('open');
+        // Reset states after close animation
+        setTimeout(function () {
+          feedbackForm.style.display = '';
+          feedbackSuccess.classList.remove('visible');
+          feedbackSubmit.disabled = false;
+          feedbackSubmit.classList.remove('sending');
+        }, 350);
+      }, 2000);
+    })
+    .catch(function () {
+      feedbackSubmit.disabled = false;
+      feedbackSubmit.classList.remove('sending');
+      feedbackSubmit.classList.add('error');
+      var label = feedbackSubmit.querySelector('.feedback-submit-label');
+      label.textContent = 'Failed — try again';
+      setTimeout(function () {
+        feedbackSubmit.classList.remove('error');
+        label.textContent = 'Send Feedback';
+      }, 3000);
+    });
+  });
+
   // --- Mouse glow effect on story cards ---
   storyCards.forEach(function (card) {
     card.addEventListener('mousemove', function (e) {

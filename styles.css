@@ -1259,6 +1259,238 @@ body::before {
   }
 }
 
+/* --- Floating Feedback Button --- */
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 3000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(108, 92, 231, 0.4);
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(108, 92, 231, 0.55);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.fab-icon-msg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fab-icon-close {
+  opacity: 0;
+  transform: scale(0.5) rotate(-90deg);
+}
+
+.fab.open .fab-icon-msg {
+  opacity: 0;
+  transform: scale(0.5) rotate(90deg);
+}
+
+.fab.open .fab-icon-close {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.fab.open {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* --- Feedback Panel --- */
+.feedback-panel {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  z-index: 2999;
+  width: 360px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 40px rgba(108, 92, 231, 0.08);
+  opacity: 0;
+  transform: translateY(16px) scale(0.95);
+  transform-origin: bottom right;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feedback-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.feedback-header {
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.feedback-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.feedback-form {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.feedback-input,
+.feedback-textarea {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  resize: vertical;
+}
+
+.feedback-input::placeholder,
+.feedback-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.feedback-input:focus,
+.feedback-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+
+.feedback-textarea {
+  min-height: 100px;
+  max-height: 200px;
+}
+
+.feedback-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.5rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition), background var(--transition);
+}
+
+.feedback-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.35);
+}
+
+.feedback-submit:active {
+  transform: translateY(0);
+}
+
+.feedback-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.feedback-submit-sending {
+  display: none;
+}
+
+.feedback-submit.sending .feedback-submit-label,
+.feedback-submit.sending .feedback-submit-arrow {
+  display: none;
+}
+
+.feedback-submit.sending .feedback-submit-sending {
+  display: inline;
+}
+
+.feedback-submit.error {
+  background: #e74c3c;
+}
+
+.feedback-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* --- Feedback Success State --- */
+.feedback-success {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.feedback-success.visible {
+  display: flex;
+}
+
+.feedback-success-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 206, 201, 0.15);
+  border: 2px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.feedback-success-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.feedback-success-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .nav-links {
@@ -1344,6 +1576,20 @@ body::before {
 
   .tools-grid {
     padding: 0 1.25rem;
+  }
+
+  .fab {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 50px;
+    height: 50px;
+  }
+
+  .feedback-panel {
+    right: 1.25rem;
+    left: 1.25rem;
+    bottom: 5rem;
+    width: auto;
   }
 }
 
