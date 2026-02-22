@@ -24,8 +24,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         title: title,
-        body: body,
-        labels: ['feedback']
+        body: body
       })
     }
   );
