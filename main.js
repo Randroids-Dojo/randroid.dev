@@ -89,7 +89,7 @@
     });
   }, observerOptions);
 
-  document.querySelectorAll('.fade-in, .playable-card, .story-card').forEach(function (el) {
+  document.querySelectorAll('.fade-in, .playable-card, .story-card, .blog-card').forEach(function (el) {
     fadeObserver.observe(el);
   });
 
@@ -169,6 +169,49 @@
 
   playableCards.forEach(function (card) {
     playableObserver.observe(card);
+  });
+
+  // --- Blog reader overlay ---
+  var blogReader = document.getElementById('blogReader');
+  var blogReaderContent = document.getElementById('blogReaderContent');
+  var blogReaderBackdrop = document.getElementById('blogReaderBackdrop');
+  var blogReaderClose = document.getElementById('blogReaderClose');
+  var blogCards = document.querySelectorAll('.blog-card[data-post]');
+
+  blogCards.forEach(function (card) {
+    card.addEventListener('click', function () {
+      var postId = card.getAttribute('data-post');
+      var template = document.getElementById(postId);
+      if (!template) return;
+
+      blogReaderContent.innerHTML = template.innerHTML;
+      blogReader.classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      // Scroll the reader panel back to top
+      var scrollEl = blogReader.querySelector('.blog-reader-scroll');
+      if (scrollEl) scrollEl.scrollTop = 0;
+    });
+  });
+
+  function closeBlogReader() {
+    blogReader.classList.remove('open');
+    document.body.style.overflow = '';
+    // Wait for close animation to clear content
+    setTimeout(function () {
+      if (!blogReader.classList.contains('open')) {
+        blogReaderContent.innerHTML = '';
+      }
+    }, 500);
+  }
+
+  blogReaderClose.addEventListener('click', closeBlogReader);
+  blogReaderBackdrop.addEventListener('click', closeBlogReader);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && blogReader.classList.contains('open')) {
+      closeBlogReader();
+    }
   });
 
   // --- Mouse glow effect on story cards ---

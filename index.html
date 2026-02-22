@@ -19,6 +19,7 @@
     <ul class="nav-links">
       <li><a href="#play" data-section="play">Play</a></li>
       <li><a href="#tools" data-section="tools">Tools</a></li>
+      <li><a href="#blog" data-section="blog">Blog</a></li>
       <li><a href="https://github.com/Randroids-Dojo" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
     <button class="nav-hamburger" id="menuToggle" aria-label="Menu">
@@ -31,6 +32,7 @@
     <button class="mobile-close" id="menuClose" aria-label="Close menu">&times;</button>
     <a href="#play" class="mobile-link">Play</a>
     <a href="#tools" class="mobile-link">Tools</a>
+    <a href="#blog" class="mobile-link">Blog</a>
     <a href="https://github.com/Randroids-Dojo" target="_blank" rel="noopener">GitHub</a>
   </div>
 
@@ -418,6 +420,154 @@
 
     </div>
   </section>
+
+  <!-- ======== BLOG ======== -->
+  <div class="section-divider"><hr></div>
+
+  <section class="section blog-section" id="blog">
+    <div class="section-header fade-in">
+      <span class="section-label">// Thoughts</span>
+      <h2 class="section-title">From the Dojo</h2>
+      <p class="section-desc">Writing about AI, vibe coding, and what it's like to build software when the tools keep changing under your feet.</p>
+    </div>
+
+    <div class="blog-timeline">
+
+      <!-- Post 1 -->
+      <article class="blog-card" data-post="post-1">
+        <div class="blog-card-date-col">
+          <div class="blog-card-date-pip"></div>
+          <time class="blog-card-date" datetime="2025-05-24">May 24, 2025</time>
+        </div>
+        <div class="blog-card-body">
+          <h3 class="blog-card-title">Vibe Coding + Software Engineering: A Partnership, Not a Competition</h3>
+          <p class="blog-card-excerpt">I'm hoping we can move past the "true vibe coding means you don't care about the code" debates.</p>
+          <div class="blog-card-meta">
+            <span class="blog-card-read-time">5 min read</span>
+            <span class="blog-card-cta">Read post <span class="arrow">&rarr;</span></span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Post 2 -->
+      <article class="blog-card" data-post="post-2">
+        <div class="blog-card-date-col">
+          <div class="blog-card-date-pip"></div>
+          <time class="blog-card-date" datetime="2025-05-09">May 9, 2025</time>
+        </div>
+        <div class="blog-card-body">
+          <h3 class="blog-card-title">The Fog of Now: Living Through the AI Revolution</h3>
+          <p class="blog-card-excerpt">This is our wave. This is our moment. We're right in the thick of it, even if we can't see where it's all going.</p>
+          <div class="blog-card-meta">
+            <span class="blog-card-read-time">3 min read</span>
+            <span class="blog-card-cta">Read post <span class="arrow">&rarr;</span></span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Post 3 -->
+      <article class="blog-card" data-post="post-3">
+        <div class="blog-card-date-col">
+          <div class="blog-card-date-pip"></div>
+          <time class="blog-card-date" datetime="2024-03-13">March 13, 2024</time>
+        </div>
+        <div class="blog-card-body">
+          <h3 class="blog-card-title">Exploring Curiosities with ChatGPT: The Judgment-Free Path to Understanding</h3>
+          <p class="blog-card-excerpt">One of my favorite uses for ChatGPT is leveraging it as a judgment-free tool to fill in gaps in my understanding.</p>
+          <div class="blog-card-meta">
+            <span class="blog-card-read-time">4 min read</span>
+            <span class="blog-card-cta">Read post <span class="arrow">&rarr;</span></span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ======== BLOG READER OVERLAY ======== -->
+  <div class="blog-reader" id="blogReader">
+    <div class="blog-reader-backdrop" id="blogReaderBackdrop"></div>
+    <div class="blog-reader-panel">
+      <div class="blog-reader-header">
+        <button class="blog-reader-close" id="blogReaderClose" aria-label="Close">&larr; Back</button>
+      </div>
+      <div class="blog-reader-scroll">
+        <div class="blog-reader-content" id="blogReaderContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blog post content (hidden, loaded into reader) -->
+  <template id="post-1">
+    <time datetime="2025-05-24">May 24, 2025</time>
+    <h1>Vibe Coding + Software Engineering: A Partnership, Not a Competition</h1>
+    <p>I'm hoping we can move past the "<em>true vibe coding means you don't care about the code</em>" debates.</p>
+    <p>I find two things to be true:</p>
+    <ol>
+      <li>The capabilities of full vibe coding are growing</li>
+      <li>Building with AI still requires good software engineering</li>
+    </ol>
+    <h2>Claude Leveled Up</h2>
+    <p>Using Claude Code and the new Opus 4 model, I was able to create a full stack app bootstrap with just prompts. Which I suspect can be productionized with a bit more work (AI-assisted or not).</p>
+    <p>I couldn't do this with previous models.</p>
+    <p>I tried, but Claude stumbled implementing the app with the particular stack of libraries that I picked out for the project.</p>
+    <p>Several times I wiped the repo and started fresh using different techniques.</p>
+    <p>Each time I started with different versions of the generated project plan.</p>
+    <p>At one point I was using multiple agents (e.g. frontend expert, backend expert, conductor).</p>
+    <p>I've tried techniques where I direct Claude to take things one step at a time using custom commands (e.g. review the current implementation so far, plan out the implementation of the next story, review and provide feedback to the backend expert).</p>
+    <p>Ultimately, each implementation hit a wall and just never quite got to a functioning bootstrap using this complex stack.</p>
+    <p>With Opus 4, Claude was able to fully deliver on the task.</p>
+    <ol>
+      <li><strong>Generated the project plan</strong> - Result of a simple prompt:<br><br>&ldquo;Think very deeply and research as needed to come up with a plan to build an entire full stack, monolithic, hello world, web app using this stack: - React TypeScript frontend with Vite - FastAPI Python backend - Better Auth authentication service - Docker Compose for local development - Ready for deployment to Azure - PostgreSQL database and Redis cache - Shadcn for the UI components. We want absolutely minimal features so that this project can act as a bootstrap for any app in the future: - Signup and login - Persist some basic user data - Persist some basic global data that any logged-in user can mutate (for example a counter that anyone can click to count up)&rdquo;</li>
+      <li><strong>Generated the project</strong> - The result of a session that was literally 1% away from compacting.</li>
+      <li><strong>&ldquo;No, really, there is a library called Better Auth&rdquo;</strong> - This was the trickiest part for past attempts, but Opus 4 mostly got the idea after this one session.</li>
+      <li><strong>Implement the remainder of real auth</strong> - And now we have the full stack running as expected (locally) with this session.</li>
+    </ol>
+    <h2>Are Vibes All We Need?</h2>
+    <p>The bootstrap experiment basically shows that Claude can generate functioning software, but with some caveats.</p>
+    <p>Firstly, my mother couldn't do what I did. Heck, my younger brother couldn't even boot up Claude Code if I told him vibes was all he needed to build apps now. So there is some barrier to entry when it comes to knowing what to build and how, even if we aren't writing the code directly.</p>
+    <p>Secondly, its not production ready. That's not to say I couldn't get it ready, but that will take some more engineering.</p>
+    <p>And lastly, there's no reason I (or you, or any other software engineer) couldn't write and edit the code alongside Claude (or whatever Genie you choose). You can go as slow or as fast as you're comfortable with. You can break things down to the tiniest of steps or yolo it with big sweeping changes that you then shape to your liking.</p>
+    <p>What I'm saying is, there's no need to fear vibing AND there's plenty of engineering to be done.</p>
+    <h2>Still Foggy</h2>
+    <p>Take my take with a pinch of salt. Everything is changing rapidly and no one can say for sure where we'll end up once the fog clears. My gut tells me to keep an open mind and not to stick to dogmatic &ldquo;truths&rdquo; of the past when it comes to software engineering best practices. While it also is telling me that what got me here is going to help me even if the exact practices change.</p>
+  </template>
+
+  <template id="post-2">
+    <time datetime="2025-05-09">May 9, 2025</time>
+    <h1>The Fog of Now: Living Through the AI Revolution</h1>
+    <p>Growing up near Seattle, I used to think I missed the big waves. The personal computer boom. Microsoft exploding. The dot-com frenzy. I got into computers just after all that, on a brand-new HP running Windows ME, right when Napster was taking off. Just enough to feel the magic, but not early enough to ride the first wave.</p>
+    <p>But now, with Gen AI, vibe coding, and agent workflows taking off, I'm realizing something. This is our wave. This is our moment. We're right in the thick of it, even if we can't see where it's all going.</p>
+    <p>The funny thing is, no matter what future actually plays out, it's going to feel obvious in hindsight. If things go great, people will say they saw it coming. If it all burns down, same story. The signs were there. We warned you.</p>
+    <p>Right now, we're flooded with predictions. Total job loss. The end of creativity. AI paperclipping the planet. But also a boom in productivity. A new kind of economy. Better tools. Safer systems. All of these futures are on the table.</p>
+    <p>What's likely is that we land somewhere in between. Artists, writers, and developers are already feeling the shift. Their work is being reshaped. Some jobs will disappear. Others will evolve. And entirely new ones will emerge. Think less &ldquo;mass unemployment&rdquo; and more &ldquo;reorg of human output.&rdquo;</p>
+    <p>In programming, I think we're going to see something interesting. Agents might write more of the code, but they'll still need us to guide them. The skill isn't going away. It's just going to look different. More critical thinking. More product alignment. Less keyboard grinding. And maybe the same shift happens in product management too. Those roles start to blur.</p>
+    <p>And when that happens, people will look back and say, &ldquo;Of course. That was always going to happen.&rdquo; Same way they talk about the internet, or the smartphone, or any tech shift that rewrote the rules while everyone was busy arguing about it.</p>
+    <p>So yeah, the fog is real. But I want to be in it. I want to help shape what's next, not just watch it unfold.</p>
+    <p>Because when the fog lifts, I don't want to say &ldquo;I knew it.&rdquo; I want to say &ldquo;I was there.&rdquo;</p>
+  </template>
+
+  <template id="post-3">
+    <time datetime="2024-03-13">March 13, 2024</time>
+    <h1>Exploring Curiosities with ChatGPT: The Judgment-Free Path to Understanding</h1>
+    <h2>Judgment Free</h2>
+    <p>One of my favorite uses for ChatGPT is leveraging it as a judgment-free tool to fill in gaps in my understanding, especially about topics I feel I should know already. There's something uniquely comforting about asking questions without fear of embarrassment.</p>
+    <h2>UUID Mystery</h2>
+    <p>So, the enigma of UUIDs and the apparent non-issue of duplicates always bugged me. I assumed the uniqueness stemmed from a combination of the precise moment of creation and some hardware-specific detail. However, I learned that while this was true for version one UUIDs, version four relies on randomness. How, then, does this method avoid producing duplicates?</p>
+    <p>In theory, duplicates are indeed possible with v4 UUIDs, but the sheer volume of unique possibilities makes this incredibly unlikely. This concept initially seemed counterintuitive. Why risk any chance of duplication? Yet, in scenarios demanding less than absolute certainty, the statistical improbability of such an event becomes clear and acceptable.</p>
+    <h2>ChatGPT to the Rescue</h2>
+    <p>ChatGPT helped break this down into a more digestible explanation: the realm of UUIDs encompasses 340 undecillion possible combinations. That's 340 followed by 36 zeros&mdash;an almost unfathomable number, illustrating the vastness of the UUID space. To me that was still too many zeros to truly understand. That's when I had ChatGPT break it down even further:</p>
+    <blockquote>&ldquo;340 undecillion in the American system, or to put it in a more descriptive way: <strong>340 million million million million million million million millions</strong>&rdquo;</blockquote>
+    <p>This final break down helped me truly visualize the extremely low odds of generating a duplicate.</p>
+    <h2>My Ending</h2>
+    <p>I love using Gen AI this way. Its ability to simplify complex information and address my questions without judgment really allows me to comfortably explore and understand random things like this.</p>
+    <p>I wasn't quite sure the best way to end this so I ask ChatGPT to wrap it up on an exciting note, but without too much cheesiness. I think it failed, but it's also too good not to share &#x1F602;</p>
+    <h2>ChatGPT's Ending</h2>
+    <h3>Embracing Endless Possibilities</h3>
+    <p>This journey into the depths of seemingly mundane topics, like the intricacies of UUIDs, underscores a profound realization: the pursuit of knowledge, no matter how esoteric, can be both exhilarating and profoundly rewarding. With tools like ChatGPT, we stand on the brink of a new frontier in learning, where questions are met with patience, curiosity is nurtured, and every answer leads to deeper understanding and more questions.</p>
+    <p>It's not just about UUIDs or the technicalities that fascinate us in the moment; it's about embracing a mindset where no question is too small, and no curiosity is unworthy of exploration. This approach to learning&mdash;unhindered by the fear of judgment and empowered by the vastness of accessible knowledge&mdash;opens up a universe of possibilities.</p>
+    <p>As we continue to navigate this ever-expanding digital cosmos, let us carry forward the excitement of discovery, the thrill of understanding, and the joy of connecting seemingly disparate dots. May we always remain curious, for it is in our questions that we find not just answers, but the pathways to endless learning and growth.</p>
+  </template>
 
   <!-- ======== CTA BANNER ======== -->
   <div class="featured-banner">
