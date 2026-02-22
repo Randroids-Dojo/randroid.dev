@@ -243,6 +243,59 @@
     openBlogPost(initialMatch[1]);
   }
 
+  // --- Floating feedback button ---
+  var fab = document.getElementById('fab');
+  var feedbackPanel = document.getElementById('feedbackPanel');
+  var feedbackForm = document.getElementById('feedbackForm');
+
+  function toggleFeedback() {
+    var isOpen = fab.classList.toggle('open');
+    feedbackPanel.classList.toggle('open', isOpen);
+    if (isOpen) {
+      document.getElementById('feedbackMessage').focus();
+    }
+  }
+
+  fab.addEventListener('click', toggleFeedback);
+
+  // Close feedback panel when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!fab.contains(e.target) && !feedbackPanel.contains(e.target) && feedbackPanel.classList.contains('open')) {
+      fab.classList.remove('open');
+      feedbackPanel.classList.remove('open');
+    }
+  });
+
+  // Close feedback panel on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && feedbackPanel.classList.contains('open')) {
+      fab.classList.remove('open');
+      feedbackPanel.classList.remove('open');
+    }
+  });
+
+  feedbackForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('feedbackName').value.trim();
+    var message = document.getElementById('feedbackMessage').value.trim();
+    if (!message) return;
+
+    var title = 'Site Feedback' + (name ? ' from ' + name : '');
+    var body = message + (name ? '\n\n— ' + name : '');
+
+    var url = 'https://github.com/Randroids-Dojo/randroid.dev/issues/new'
+      + '?title=' + encodeURIComponent(title)
+      + '&body=' + encodeURIComponent(body)
+      + '&labels=' + encodeURIComponent('feedback');
+
+    window.open(url, '_blank', 'noopener');
+
+    // Reset form and close panel
+    feedbackForm.reset();
+    fab.classList.remove('open');
+    feedbackPanel.classList.remove('open');
+  });
+
   // --- Mouse glow effect on story cards ---
   storyCards.forEach(function (card) {
     card.addEventListener('mousemove', function (e) {
