@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Randroid's Dojo — Developer Portfolio</title>
+  <meta name="description" content="Games, tools, and AI-powered dev workflows by Randroid's Dojo. Play games live, explore open-source tools, and see what happens when AI agents build software.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥋</text></svg>">
+</head>
+<body>
+
+  <!-- ======== NAV ======== -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-logo">randroid<span>.dev</span></a>
+    <ul class="nav-links">
+      <li><a href="#play" data-section="play">Play</a></li>
+      <li><a href="#tools" data-section="tools">Tools</a></li>
+      <li><a href="https://github.com/Randroids-Dojo" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+    <button class="nav-hamburger" id="menuToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-close" id="menuClose" aria-label="Close menu">&times;</button>
+    <a href="#play" class="mobile-link">Play</a>
+    <a href="#tools" class="mobile-link">Tools</a>
+    <a href="https://github.com/Randroids-Dojo" target="_blank" rel="noopener">GitHub</a>
+  </div>
+
+  <!-- ======== HERO ======== -->
+  <section class="hero" id="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        building with AI agents
+      </div>
+      <h1>
+        Games, Tools &amp;<br>
+        <span class="gradient-text">Agent Workflows</span>
+      </h1>
+      <p class="hero-subtitle">
+        Open-source projects from Randroid's Dojo &mdash; where AI agents mob-program games, automate game engines, and push the boundaries of what dev tools can do.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-number" data-count="17">0</div>
+          <div class="hero-stat-label">Projects</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-number" data-count="6">0</div>
+          <div class="hero-stat-label">Playable</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-number" data-count="8">0</div>
+          <div class="hero-stat-label">Languages</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-cue">
+      <span>Scroll to explore</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ======== PLAYABLE PROJECTS ======== -->
+  <div class="section-divider"><hr></div>
+
+  <section class="section" id="play">
+    <div class="section-header fade-in">
+      <span class="section-label">// Interactive</span>
+      <h2 class="section-title">Play Live</h2>
+      <p class="section-desc">These projects run right here in your browser. Click play to launch them &mdash; no installs, no downloads.</p>
+    </div>
+
+    <div class="playable-grid">
+
+      <!-- Determined -->
+      <div class="playable-card" data-url="https://determined-khaki.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(108, 92, 231, 0.15);">🧠</div>
+            <div>
+              <div class="playable-card-title">Determined</div>
+              <div class="playable-card-tagline">An LLM-enabled web game &mdash; AI meets interactive fiction</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://determined-khaki.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/Determined" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch Determined</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag">JavaScript</span>
+          <span class="tech-tag teal">LLM-Powered</span>
+          <span class="tech-tag pink">Interactive Fiction</span>
+        </div>
+      </div>
+
+      <!-- UnrealFrog -->
+      <div class="playable-card" data-url="https://unreal-frog.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(0, 206, 201, 0.15);">🐸</div>
+            <div>
+              <div class="playable-card-title">UnrealFrog</div>
+              <div class="playable-card-tagline">3D Frogger arcade game built in Unreal Engine 5.4 by an 8-agent mob</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://unreal-frog.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/UnrealFrog" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch UnrealFrog</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag teal">Unreal Engine 5.4</span>
+          <span class="tech-tag">C++</span>
+          <span class="tech-tag pink">8-Agent Mob</span>
+        </div>
+      </div>
+
+      <!-- GoDig -->
+      <div class="playable-card" data-url="https://go-dig.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(253, 203, 110, 0.15);">&#x26CF;&#xFE0F;</div>
+            <div>
+              <div class="playable-card-title">GoDig</div>
+              <div class="playable-card-tagline">A digging game built with Godot 4.x in portrait mode</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://go-dig.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/GoDig" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch GoDig</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag gold">Godot 4.x</span>
+          <span class="tech-tag">GDScript</span>
+          <span class="tech-tag teal">PlayGodot Tested</span>
+        </div>
+      </div>
+
+      <!-- GoPit -->
+      <div class="playable-card" data-url="https://go-pit.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(253, 121, 168, 0.15);">&#x1F525;</div>
+            <div>
+              <div class="playable-card-title">GoPit</div>
+              <div class="playable-card-tagline">Mobile arcade &mdash; fire projectiles at waves of descending slimes</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://go-pit.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/GoPit" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch GoPit</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag gold">Godot 4.5</span>
+          <span class="tech-tag">GDScript</span>
+          <span class="tech-tag pink">Wave Survival</span>
+        </div>
+      </div>
+
+      <!-- Block-You -->
+      <div class="playable-card" data-url="https://block-you.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(108, 92, 231, 0.15);">&#x1F9F1;</div>
+            <div>
+              <div class="playable-card-title">Block-You</div>
+              <div class="playable-card-tagline">A block-based puzzle game in the browser</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://block-you.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/Block-You" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch Block-You</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag">JavaScript</span>
+          <span class="tech-tag teal">Browser Game</span>
+        </div>
+      </div>
+
+      <!-- GameTape -->
+      <div class="playable-card" data-url="https://game-tape.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(0, 206, 201, 0.15);">&#x1F3AC;</div>
+            <div>
+              <div class="playable-card-title">GameTape</div>
+              <div class="playable-card-tagline">Study agent workflows like a coach studies game tape</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://game-tape.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/GameTape" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch GameTape</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag">HTML</span>
+          <span class="tech-tag teal">Agent Analytics</span>
+          <span class="tech-tag gold">Workflow Replay</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======== DEV TOOLS ======== -->
+  <section class="tools-section" id="tools">
+    <div class="section-header fade-in" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem;">
+      <span class="section-label">// Open Source</span>
+      <h2 class="section-title">Dev Tools &amp; Frameworks</h2>
+      <p class="section-desc">The infrastructure behind the games. Automation frameworks, AI agent skills, and developer utilities born from real projects.</p>
+    </div>
+
+    <div class="tools-grid">
+
+      <!-- PlayGodot -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(53, 114, 165, 0.15);">&#x1F3AD;</div>
+          <div class="story-card-stars">&#9733; 10</div>
+        </div>
+        <h3>PlayGodot</h3>
+        <p class="story-card-narrative">
+          Every game engine had automated testing &mdash; except Godot. Traditional frameworks ran <em>inside</em> the engine, crashing tests along with your game. PlayGodot flipped the model: <span class="highlight">Playwright, but for games.</span> It controls Godot externally over a custom binary protocol, capturing screenshots, simulating input, and querying scene trees &mdash; all from Python. With <span class="highlight">210+ tests</span> and a PyPI package, it's the foundation that GoDig and GoPit are tested on, and the reason those games ship with confidence.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-python"></span> Python</span>
+          <a href="https://github.com/Randroids-Dojo/PlayGodot" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(108, 92, 231, 0.15);">&#x1F9E0;</div>
+          <div class="story-card-stars">&#9733; 9</div>
+        </div>
+        <h3>Skills</h3>
+        <p class="story-card-narrative">
+          When AI coding agents kept making the same mistakes &mdash; wrong build commands, broken test patterns, missing engine conventions &mdash; skills became the fix. This collection gives <span class="highlight">Claude Code, Codex CLI, and OpenCode</span> deep knowledge of Godot, Unreal Engine, autonomous dev loops, and task tracking. One <code>npx skills add</code> command turns a general-purpose LLM into a <span class="highlight">specialized game dev partner</span> that knows how to export, test, and deploy your project.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-python"></span> Python</span>
+          <a href="https://github.com/Randroids-Dojo/skills" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- VibeGo -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(0, 206, 201, 0.15);">&#x1F4F1;</div>
+        </div>
+        <h3>VibeGo</h3>
+        <p class="story-card-narrative">
+          The couch coding dream: kick back, grab your phone, and orchestrate AI agents running on your Mac. VibeGo connects your Android phone to <span class="highlight">Claude Code and Codex CLI</span> over local WiFi via SSH and tmux. Push notifications ping you when the AI needs input or finishes a task. Multiple parallel sessions, <span class="highlight">jj VCS integration</span>, and an optional auto-responder that handles safe operations while you stay in the loop on the important calls.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-typescript"></span> TypeScript</span>
+          <a href="https://github.com/Randroids-Dojo/VibeGo" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- TeddyBot -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(104, 33, 122, 0.15);">&#x1F9F8;</div>
+          <div class="story-card-stars">&#9733; 1</div>
+        </div>
+        <h3>TeddyBot</h3>
+        <p class="story-card-narrative">
+          A proof-of-concept that bridges the Microsoft AI stack with the Model Context Protocol. TeddyBot combines <span class="highlight">Semantic Kernel</span> and <span class="highlight">Microsoft.Extensions.AI</span> with MCP tool integration &mdash; 14 filesystem tools let the agent read, write, search, and navigate files through natural conversation. Built on .NET 10, it's a blueprint for adding <span class="highlight">MCP-powered file operations</span> to any .NET AI application.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-csharp"></span> C#</span>
+          <a href="https://github.com/Randroids-Dojo/TeddyBot" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- CopyPath -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(240, 81, 56, 0.15);">&#x1F4CB;</div>
+          <div class="story-card-stars">&#9733; 1</div>
+        </div>
+        <h3>CopyPath</h3>
+        <p class="story-card-narrative">
+          The tool that shouldn't need to exist but does. macOS Finder has never had a native "copy path" option in the right-click menu. CopyPath adds it &mdash; <span class="highlight">full path and quoted path</span> for terminal-safe pasting, plus copy from empty folder space. A tiny Swift extension for macOS Ventura+ that scratches the itch <span class="highlight">every developer has felt</span> but Apple never fixed.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-swift"></span> Swift</span>
+          <a href="https://github.com/Randroids-Dojo/CopyPath" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- gpt5-fullstack-bootstrap -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(253, 203, 110, 0.15);">&#x1F680;</div>
+          <div class="story-card-stars">&#9733; 2</div>
+        </div>
+        <h3>GPT-5 Fullstack Bootstrap</h3>
+        <p class="story-card-narrative">
+          An experiment in letting AI build the whole stack. This project was <span class="highlight">built entirely by ChatGPT and Cursor CLI</span> &mdash; React TypeScript frontend, FastAPI backend, PostgreSQL database, all wired together in Docker. A snapshot of what pure AI-driven development looks like: <span class="highlight">no human code, only prompts.</span> The result is a clean, deployable fullstack template that actually works.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-python"></span> Python + TypeScript</span>
+          <a href="https://github.com/Randroids-Dojo/gpt5-fullstack-bootstrap" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- PlayUnreal -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(108, 92, 231, 0.15);">&#x1F3AE;</div>
+        </div>
+        <h3>PlayUnreal</h3>
+        <p class="story-card-narrative">
+          If PlayGodot proved the model, PlayUnreal is the next frontier. <span class="highlight">The same external automation philosophy</span> &mdash; control Unreal Engine games from Python, run tests outside the engine, capture and compare screenshots &mdash; adapted to the beast that is UE5. Born from the UnrealFrog project's need for <span class="highlight">reliable CI/CD testing</span> of a 3D game built by AI agents.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-python"></span> Python</span>
+          <a href="https://github.com/Randroids-Dojo/PlayUnreal" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- dev-mac-setup -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(137, 224, 81, 0.15);">&#x1F5A5;&#xFE0F;</div>
+        </div>
+        <h3>Dev Mac Setup</h3>
+        <p class="story-card-narrative">
+          The "new Mac day" companion. A <span class="highlight">complete macOS development environment setup</span> with Hammerspoon workspace management, automation scripts, and developer tooling. One-command bootstrapping that takes a fresh Mac from unboxed to <span class="highlight">fully configured dev machine</span> &mdash; terminal, editors, compilers, containers, and custom window management all dialed in.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-shell"></span> Shell</span>
+          <a href="https://github.com/Randroids-Dojo/dev-mac-setup" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- Logo-Remix -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(253, 121, 168, 0.15);">&#x1F3A8;</div>
+        </div>
+        <h3>Logo Remix</h3>
+        <p class="story-card-narrative">
+          Generative art meets brand identity. Take a vector image and <span class="highlight">endlessly reconfigure it</span> &mdash; shifting colors, morphing shapes, remixing composition. A creative coding experiment that turns static SVGs into a <span class="highlight">living canvas</span> of procedural variations. Part tool, part art piece, entirely mesmerizing.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-html"></span> HTML</span>
+          <a href="https://github.com/Randroids-Dojo/Logo-Remix" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======== CTA BANNER ======== -->
+  <div class="featured-banner">
+    <div class="featured-inner fade-in">
+      <h2>Built by Humans &amp; Agents</h2>
+      <p>Every project in this portfolio was built with AI agents in the loop &mdash; from mob-programming 3D games with 8 agents to writing Godot automation frameworks. See how the sausage gets made.</p>
+      <a href="https://github.com/Randroids-Dojo" target="_blank" rel="noopener" class="btn-primary">
+        Explore on GitHub
+        <span>&rarr;</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ======== FOOTER ======== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="footer-copy">&copy; 2026 Randroid's Dojo</span>
+      <div class="footer-links">
+        <a href="https://github.com/Randroids-Dojo" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
