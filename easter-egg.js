@@ -25,42 +25,37 @@
     }
   });
 
-  // ---- Capture screenshot & launch ----
+  // ---- Load static preview & launch ----
   function launch() {
     var W = window.innerWidth;
     var H = window.innerHeight;
-    var scrollY = window.scrollY || window.pageYOffset;
 
-    function startWithFallback() {
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      var x = c.getContext('2d');
+      drawImageCover(x, img, W, H);
+      startGame(c, W, H);
+    };
+    img.onerror = function () {
+      // Fallback: dark canvas matching site background
       var c = document.createElement('canvas');
       c.width = W; c.height = H;
       var x = c.getContext('2d');
       x.fillStyle = '#0a0a0f';
       x.fillRect(0, 0, W, H);
       startGame(c, W, H);
-    }
+    };
+    img.src = 'site-preview.jpg';
+  }
 
-    if (typeof html2canvas !== 'undefined') {
-      html2canvas(document.documentElement, {
-        x: 0,
-        y: scrollY,
-        width: W,
-        height: H,
-        windowWidth: W,
-        windowHeight: H,
-        scale: 1,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        ignoreElements: function (el) {
-          return el.tagName === 'IFRAME';
-        }
-      }).then(function (cap) {
-        startGame(cap, W, H);
-      }).catch(startWithFallback);
-    } else {
-      startWithFallback();
-    }
+  // Draw image scaled to cover canvas (like background-size: cover)
+  function drawImageCover(ctx, img, W, H) {
+    var scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    var sw = img.naturalWidth * scale;
+    var sh = img.naturalHeight * scale;
+    ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
   }
 
   // ====================================================
@@ -356,8 +351,7 @@
       // PHASE: SHATTERING
       // ----------------------------------------
       } else if (phase === 'shattering') {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, W, H);
+        ctx.drawImage(screenshot, 0, 0, W, H);
 
         var allDone = true;
         for (var i = 0; i < shards.length; i++) {
