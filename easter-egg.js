@@ -50,12 +50,15 @@
     img.src = 'site-preview.jpg';
   }
 
-  // Draw image scaled to cover canvas (like background-size: cover)
+  // Draw image scaled to match viewport width (preserves horizontal layout)
   function drawImageCover(ctx, img, W, H) {
-    var scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
-    var sw = img.naturalWidth * scale;
+    var scale = W / img.naturalWidth;
     var sh = img.naturalHeight * scale;
-    ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
+    ctx.drawImage(img, 0, 0, W, sh);
+    if (sh < H) {
+      ctx.fillStyle = '#0a0a0f';
+      ctx.fillRect(0, sh, W, H - sh);
+    }
   }
 
   // ====================================================
