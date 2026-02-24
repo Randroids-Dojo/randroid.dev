@@ -47,7 +47,12 @@
       x.fillRect(0, 0, W, H);
       startGame(c, W, H);
     };
-    img.src = 'site-preview.jpg';
+    // Pick the screenshot closest to the current viewport width
+    var src = W <= 600  ? 'site-preview-mobile.jpg'
+            : W <= 900  ? 'site-preview-tablet.jpg'
+            : W <= 1200 ? 'site-preview-mid.jpg'
+            :             'site-preview.jpg';
+    img.src = src;
   }
 
   // Draw image scaled to match viewport width (preserves horizontal layout)
