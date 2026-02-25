@@ -351,6 +351,22 @@
   });
 })();
 
+// --- Mi Casa Es Su Casa — name-based embed loader ---
+function loadMiCasa(event, form) {
+  event.preventDefault();
+  var input = form.querySelector('.mcesc-input');
+  var name = input.value.trim();
+  if (!name || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,18}[A-Za-z0-9]$|^[A-Za-z0-9]$/.test(name)) {
+    input.style.borderColor = 'var(--accent)';
+    input.focus();
+    return;
+  }
+  var placeholder = form.closest('.embed-placeholder');
+  var card = placeholder.closest('.playable-card');
+  card.setAttribute('data-url', 'https://mi-casa-es-su-casa.vercel.app/' + encodeURIComponent(name.toLowerCase()));
+  loadEmbed(placeholder);
+}
+
 // --- Embed loader (global for onclick) ---
 function loadEmbed(placeholder) {
   var container = placeholder.parentElement;

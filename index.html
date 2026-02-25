@@ -216,9 +216,16 @@
           </div>
         </div>
         <div class="playable-card-embed">
-          <div class="embed-placeholder" onclick="loadEmbed(this)">
-            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-            <span class="embed-label">Click to launch Mi Casa Es Su Casa</span>
+          <div class="embed-placeholder mcesc-placeholder">
+            <div class="mcesc-prompt">
+              <div class="mcesc-icon">&#x1F3E0;</div>
+              <p class="mcesc-label">Whose home would you like to visit?</p>
+              <form class="mcesc-form" onsubmit="loadMiCasa(event, this)">
+                <input class="mcesc-input" type="text" placeholder="Enter a name…" maxlength="20" autocomplete="off" spellcheck="false" />
+                <button class="mcesc-btn" type="submit">Visit</button>
+              </form>
+              <p class="mcesc-hint">No account needed &mdash; just a name</p>
+            </div>
           </div>
         </div>
         <div class="playable-card-footer">
