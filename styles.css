@@ -1719,3 +1719,97 @@ body::before {
     padding: 1.5rem;
   }
 }
+
+/* --- Interactive Book (Codex) Overlay --- */
+#bookOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  background: rgba(0, 0, 0, 0.92);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+#bookOverlay.open {
+  display: flex;
+  opacity: 1;
+}
+
+#bookOverlay.fade-in {
+  opacity: 1;
+}
+
+#bookCanvas {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.book-close-btn {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 9991;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), border-color var(--transition);
+  line-height: 1;
+  font-family: var(--font-sans);
+}
+
+.book-close-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+#bookOverlay.open .book-close-btn {
+  display: flex;
+}
+
+.book-nav-hint {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9991;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#bookOverlay.open .book-nav-hint {
+  display: block;
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .book-close-btn {
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+  }
+  .book-nav-hint {
+    bottom: 1rem;
+    font-size: 0.6rem;
+  }
+}

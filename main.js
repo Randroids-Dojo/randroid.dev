@@ -171,7 +171,7 @@
     playableObserver.observe(card);
   });
 
-  // --- Blog reader overlay ---
+  // --- Blog reader (Interactive Book / Codex) ---
   var blogReader = document.getElementById('blogReader');
   var blogReaderContent = document.getElementById('blogReaderContent');
   var blogReaderBackdrop = document.getElementById('blogReaderBackdrop');
@@ -179,22 +179,27 @@
   var blogCards = document.querySelectorAll('.blog-card[data-post]');
 
   function openBlogPost(postId) {
+    // Use the interactive book if available, fall back to old reader
+    if (window.RandroidCodex) {
+      window.RandroidCodex.open(postId);
+      return;
+    }
     var template = document.getElementById(postId);
     if (!template) return;
-
     blogReaderContent.innerHTML = template.innerHTML;
     blogReader.classList.add('open');
     document.body.style.overflow = 'hidden';
-
-    // Scroll the reader panel back to top
     var scrollEl = blogReader.querySelector('.blog-reader-scroll');
     if (scrollEl) scrollEl.scrollTop = 0;
   }
 
   function closeBlogReaderUI() {
+    if (window.RandroidCodex && window.RandroidCodex.isOpen()) {
+      window.RandroidCodex.close();
+      return;
+    }
     blogReader.classList.remove('open');
     document.body.style.overflow = '';
-    // Wait for close animation to clear content
     setTimeout(function () {
       if (!blogReader.classList.contains('open')) {
         blogReaderContent.innerHTML = '';
@@ -222,8 +227,12 @@
   blogReaderBackdrop.addEventListener('click', closeBlogReader);
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && blogReader.classList.contains('open')) {
-      closeBlogReader();
+    if (e.key === 'Escape') {
+      if (window.RandroidCodex && window.RandroidCodex.isOpen()) {
+        closeBlogReader();
+      } else if (blogReader.classList.contains('open')) {
+        closeBlogReader();
+      }
     }
   });
 
@@ -232,6 +241,8 @@
     var match = location.hash.match(/^#blog\/(post-\d+)$/);
     if (match) {
       openBlogPost(match[1]);
+    } else if (window.RandroidCodex && window.RandroidCodex.isOpen()) {
+      closeBlogReaderUI();
     } else if (blogReader.classList.contains('open')) {
       closeBlogReaderUI();
     }
