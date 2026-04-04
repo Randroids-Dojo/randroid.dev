@@ -1,35 +1,14 @@
 /* ============================================
    RANDROID'S CODEX — Interactive Book UI
-   Canvas-based book with page curves, perspective,
-   and page turn animations. Inspired by Grudgekeeper.
+   Canvas-based book with page spine curves,
+   perspective, and page turn animations.
+   Inspired by Grudgekeeper's book UI.
    ============================================ */
 (function () {
   'use strict';
 
-  // --- Design tokens (matching site) ---
-  var COLORS = {
-    bg: '#0a0a0f',
-    bgCard: '#16161f',
-    bgCardHover: '#1c1c28',
-    text: '#e8e8ed',
-    textSec: '#9898a8',
-    textMuted: '#5c5c6e',
-    accent: '#e74c3c',
-    accentGlow: '#ff6b6b',
-    teal: '#00cec9',
-    gold: '#fdcb6e',
-    border: '#2a2a3a',
-    pageBg: '#1a1a26',
-    pageLight: '#22222e',
-    coverDark: '#0e0e16',
-    coverEdge: '#2a1a1a',
-    spine: '#111118',
-    wood: '#1c1410',
-    woodLight: '#2a2018',
-  };
-
-  // roundRect polyfill for older browsers
-  if (!CanvasRenderingContext2D.prototype.roundRect) {
+  // roundRect polyfill
+  if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
       if (typeof r === 'number') r = [r, r, r, r];
       this.moveTo(x + r[0], y);
@@ -45,1120 +24,853 @@
     };
   }
 
-  var SEGMENT_COUNT = 8;
-  var PERSPECTIVE = 0.04; // how much narrower the top is
-  var SPINE_CURVE = 0.055; // how much pages curve into spine
-  var PAGE_TURN_MS = 600;
-  var FONT_SANS = "'Inter', sans-serif";
-  var FONT_MONO = "'JetBrains Mono', monospace";
-
-  // --- State ---
-  var state = {
-    isOpen: false,
-    pages: [],
-    currentSpread: 0,
-    turning: false,
-    turnProgress: 0,
-    turnDirection: 1,
-    turnStartTime: 0,
-    postId: null,
-    tocMode: false,
-    tocEntries: [],
-    animFrame: null,
-    isMobile: false,
-    hoverSide: null, // 'left' or 'right' or null
+  // --- Colors ---
+  var C = {
+    bg: '#0a0a0f',
+    text: '#e8e8ed',
+    textSec: '#9898a8',
+    textMuted: '#5c5c6e',
+    accent: '#e74c3c',
+    accentGlow: '#ff6b6b',
+    teal: '#00cec9',
+    gold: '#fdcb6e',
+    border: '#2a2a3a',
+    page: '#1c1c2a',
+    pageLt: '#22222f',
+    cover: '#0d0d14',
+    coverFrame: '#1a1018',
+    coverAccent: '#2a1520',
+    spine: '#080810',
+    tableTop: '#0e0c0a',
+    tableMid: '#141210',
   };
 
-  // --- DOM ---
-  var overlay, canvas, ctx, closeBtn, navHint;
+  var SEGS = 10;            // spine curve segments
+  var PERSP = 0.055;        // perspective amount (top inset ratio)
+  var SPINE_DIP = 0.12;     // how much pages curve into spine
+  var TURN_MS = 550;
+  var COVER_W = 14;         // cover frame thickness
+  var PAGE_EDGE_LAYERS = 5; // visible page stack layers
+  var FSANS = "'Inter', sans-serif";
+  var FMONO = "'JetBrains Mono', monospace";
 
-  function createDOM() {
+  // --- State ---
+  var S = {
+    open: false, pages: [], spread: 0, turning: false,
+    turnProg: 0, turnDir: 1, turnStart: 0,
+    postId: null, toc: true, tocHits: [],
+    raf: null, mobile: false, hover: null,
+  };
+
+  var overlay, cvs, ctx, closeBtn, hint;
+
+  // --- DOM setup ---
+  function initDOM() {
     overlay = document.createElement('div');
     overlay.id = 'bookOverlay';
-
-    canvas = document.createElement('canvas');
-    canvas.id = 'bookCanvas';
-    overlay.appendChild(canvas);
-
+    cvs = document.createElement('canvas');
+    cvs.id = 'bookCanvas';
+    overlay.appendChild(cvs);
     closeBtn = document.createElement('button');
     closeBtn.className = 'book-close-btn';
     closeBtn.innerHTML = '&times;';
     closeBtn.setAttribute('aria-label', 'Close book');
     overlay.appendChild(closeBtn);
-
-    navHint = document.createElement('div');
-    navHint.className = 'book-nav-hint';
-    navHint.textContent = 'click pages to turn // esc to close';
-    overlay.appendChild(navHint);
-
+    hint = document.createElement('div');
+    hint.className = 'book-nav-hint';
+    hint.textContent = 'click pages to turn // esc to close';
+    overlay.appendChild(hint);
     document.body.appendChild(overlay);
-    ctx = canvas.getContext('2d');
+    ctx = cvs.getContext('2d');
   }
 
-  // --- Resize ---
   function resize() {
     var dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
+    cvs.width = window.innerWidth * dpr;
+    cvs.height = window.innerHeight * dpr;
+    cvs.style.width = window.innerWidth + 'px';
+    cvs.style.height = window.innerHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    state.isMobile = window.innerWidth < 768;
+    S.mobile = window.innerWidth < 768;
   }
 
-  // --- Book Dimensions ---
-  function getBookRect() {
-    var vw = window.innerWidth;
-    var vh = window.innerHeight;
-    var bookW, bookH;
-    if (state.isMobile) {
-      bookW = vw * 0.92;
-      bookH = vh * 0.65;
+  // --- Book rect: MUCH bigger, fills viewport ---
+  function bkRect() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var w, h;
+    if (S.mobile) {
+      w = vw * 0.96; h = vh * 0.78;
     } else {
-      bookW = Math.min(vw * 0.75, 960);
-      bookH = Math.min(vh * 0.7, 580);
+      w = Math.min(vw * 0.88, 1200);
+      h = Math.min(vh * 0.85, 720);
     }
-    var x = (vw - bookW) / 2;
-    var y = (vh - bookH) / 2 - 10;
-    return { x: x, y: y, w: bookW, h: bookH };
+    return { x: (vw - w) / 2, y: (vh - h) / 2, w: w, h: h };
   }
 
-  // --- Procedural Parchment Noise ---
-  var noiseCanvas = null;
-  function generateNoise(w, h) {
-    if (noiseCanvas && noiseCanvas.width === Math.ceil(w) && noiseCanvas.height === Math.ceil(h)) return noiseCanvas;
-    noiseCanvas = document.createElement('canvas');
-    noiseCanvas.width = Math.ceil(w);
-    noiseCanvas.height = Math.ceil(h);
-    var nc = noiseCanvas.getContext('2d');
-    var imgData = nc.createImageData(noiseCanvas.width, noiseCanvas.height);
-    var d = imgData.data;
+  // --- Noise texture cache ---
+  var _noise = null;
+  function getNoise(w, h) {
+    w = Math.ceil(w); h = Math.ceil(h);
+    if (_noise && _noise.width === w && _noise.height === h) return _noise;
+    _noise = document.createElement('canvas');
+    _noise.width = w; _noise.height = h;
+    var nc = _noise.getContext('2d');
+    var id = nc.createImageData(w, h), d = id.data;
     for (var i = 0; i < d.length; i += 4) {
-      var v = Math.random() * 18 - 9;
-      d[i] = 26 + v;
-      d[i + 1] = 26 + v;
-      d[i + 2] = 38 + v;
-      d[i + 3] = 255;
+      var v = Math.random() * 20 - 10;
+      d[i] = 28 + v; d[i+1] = 28 + v; d[i+2] = 42 + v; d[i+3] = 255;
     }
-    nc.putImageData(imgData, 0, 0);
-    return noiseCanvas;
+    nc.putImageData(id, 0, 0);
+    return _noise;
   }
 
-  // --- Draw Robot Doodle ---
-  function drawRobot(ctx, cx, cy, size, color) {
-    var s = size / 60;
+  // --- Draw Robot doodle ---
+  function drawBot(cx, cy, sz, clr) {
+    var s = sz / 60;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.strokeStyle = color || COLORS.teal;
+    ctx.strokeStyle = clr || C.teal;
     ctx.lineWidth = 1.5 * s;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.globalAlpha = 0.35;
-
-    // Antenna
-    ctx.beginPath();
-    ctx.moveTo(0, -22 * s);
-    ctx.lineTo(0, -30 * s);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(0, -32 * s, 3 * s, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Head
-    ctx.beginPath();
-    ctx.roundRect(-14 * s, -22 * s, 28 * s, 22 * s, 4 * s);
-    ctx.stroke();
-
-    // Eyes
-    ctx.fillStyle = COLORS.accent;
     ctx.globalAlpha = 0.3;
-    ctx.fillRect(-8 * s, -16 * s, 6 * s, 6 * s);
-    ctx.fillStyle = COLORS.teal;
-    ctx.fillRect(2 * s, -16 * s, 6 * s, 6 * s);
-
+    // Antenna
+    ctx.beginPath(); ctx.moveTo(0,-22*s); ctx.lineTo(0,-30*s); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,-32*s,3*s,0,Math.PI*2); ctx.stroke();
+    // Head
+    ctx.beginPath(); ctx.roundRect(-14*s,-22*s,28*s,22*s,4*s); ctx.stroke();
+    // Eyes
+    ctx.fillStyle = C.accent; ctx.globalAlpha = 0.25;
+    ctx.fillRect(-8*s,-16*s,6*s,6*s);
+    ctx.fillStyle = C.teal;
+    ctx.fillRect(2*s,-16*s,6*s,6*s);
+    ctx.globalAlpha = 0.3;
     // Mouth
-    ctx.globalAlpha = 0.35;
-    ctx.beginPath();
-    ctx.moveTo(-6 * s, -4 * s);
-    ctx.lineTo(6 * s, -4 * s);
-    ctx.stroke();
-
+    ctx.beginPath(); ctx.moveTo(-6*s,-4*s); ctx.lineTo(6*s,-4*s); ctx.stroke();
     // Body
-    ctx.beginPath();
-    ctx.roundRect(-12 * s, 2 * s, 24 * s, 28 * s, 3 * s);
-    ctx.stroke();
-
-    // Belt
-    ctx.beginPath();
-    ctx.moveTo(-12 * s, 14 * s);
-    ctx.lineTo(12 * s, 14 * s);
-    ctx.stroke();
-
+    ctx.beginPath(); ctx.roundRect(-12*s,2*s,24*s,28*s,3*s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-12*s,14*s); ctx.lineTo(12*s,14*s); ctx.stroke();
     // Arms
     ctx.beginPath();
-    ctx.moveTo(-12 * s, 6 * s);
-    ctx.lineTo(-20 * s, 18 * s);
-    ctx.moveTo(12 * s, 6 * s);
-    ctx.lineTo(20 * s, 18 * s);
+    ctx.moveTo(-12*s,6*s); ctx.lineTo(-20*s,18*s);
+    ctx.moveTo(12*s,6*s); ctx.lineTo(20*s,18*s);
     ctx.stroke();
-
     // Legs
     ctx.beginPath();
-    ctx.moveTo(-6 * s, 30 * s);
-    ctx.lineTo(-8 * s, 40 * s);
-    ctx.moveTo(6 * s, 30 * s);
-    ctx.lineTo(8 * s, 40 * s);
+    ctx.moveTo(-6*s,30*s); ctx.lineTo(-8*s,40*s);
+    ctx.moveTo(6*s,30*s); ctx.lineTo(8*s,40*s);
     ctx.stroke();
-
     ctx.restore();
   }
 
-  // --- Draw Curved Page ---
-  function drawCurvedPage(side, bk, opts) {
+  // ============================================================
+  //  DRAW A SINGLE PAGE with spine curve + perspective
+  //  This is the core visual from the Grudgekeeper video:
+  //  - Trapezoid shape (top narrower than bottom)
+  //  - Spine edge curves inward via chain of line segments
+  //  - Visible page thickness at outer edge
+  // ============================================================
+  function drawPage(side, bk, opts) {
     opts = opts || {};
-    var pageW = bk.w / 2;
-    var pageH = bk.h;
-    var pInset = bk.w * PERSPECTIVE;
-    var sCurve = pageW * SPINE_CURVE;
-    var spineX = bk.x + bk.w / 2;
-    var alpha = opts.alpha !== undefined ? opts.alpha : 1;
-    var xOffset = opts.xOffset || 0;
-    var shadowDepth = opts.shadowDepth || 0;
+    var halfW = bk.w / 2;
+    var pxInset = bk.w * PERSP;       // perspective inset at top
+    var dipPx = halfW * SPINE_DIP;     // max spine dip in px
+    var spX = bk.x + halfW;           // spine X center
 
-    ctx.save();
-    ctx.globalAlpha = alpha;
-
-    var outerX, topOuter, topSpine, botOuter, botSpine;
-
+    // --- Compute the 4 corners (trapezoid) ---
+    var topOuter, topSpine, botOuter, botSpine;
     if (side === 'left') {
-      outerX = bk.x + xOffset;
-      topOuter = { x: outerX + pInset, y: bk.y };
-      topSpine = { x: spineX + xOffset, y: bk.y + pInset * 0.3 };
-      botOuter = { x: outerX, y: bk.y + pageH };
-      botSpine = { x: spineX + xOffset, y: bk.y + pageH };
+      topOuter  = { x: bk.x + pxInset * 0.5, y: bk.y };
+      topSpine  = { x: spX - pxInset * 0.3,   y: bk.y + pxInset * 0.5 };
+      botOuter  = { x: bk.x,                   y: bk.y + bk.h };
+      botSpine  = { x: spX,                    y: bk.y + bk.h };
     } else {
-      outerX = bk.x + bk.w + xOffset;
-      topOuter = { x: outerX - pInset, y: bk.y };
-      topSpine = { x: spineX + xOffset, y: bk.y + pInset * 0.3 };
-      botOuter = { x: outerX, y: bk.y + pageH };
-      botSpine = { x: spineX + xOffset, y: bk.y + pageH };
+      topOuter  = { x: bk.x + bk.w - pxInset * 0.5, y: bk.y };
+      topSpine  = { x: spX + pxInset * 0.3,          y: bk.y + pxInset * 0.5 };
+      botOuter  = { x: bk.x + bk.w,                  y: bk.y + bk.h };
+      botSpine  = { x: spX,                           y: bk.y + bk.h };
     }
 
-    ctx.beginPath();
-    // Top edge
-    ctx.moveTo(topOuter.x, topOuter.y);
-    ctx.lineTo(topSpine.x, topSpine.y);
-
-    // Spine edge (curved segments going down)
-    for (var i = 1; i <= SEGMENT_COUNT; i++) {
-      var t = i / SEGMENT_COUNT;
-      var sy = topSpine.y + (botSpine.y - topSpine.y) * t;
-      var bend = 0;
-      if (i <= 2) {
-        bend = sCurve * (1 - t * (SEGMENT_COUNT / 3));
-      } else if (i <= SEGMENT_COUNT - 1) {
-        bend = -sCurve * 0.15 * Math.sin(t * Math.PI);
+    // --- Build spine edge as chain of curved segments ---
+    var spinePoints = [topSpine];
+    for (var i = 1; i <= SEGS; i++) {
+      var t = i / SEGS;
+      var y = topSpine.y + (botSpine.y - topSpine.y) * t;
+      // Curve: strongest at top, fading toward bottom
+      var curve = dipPx * Math.pow(1 - t, 1.5) * 1.2;
+      // Also a slight inward bow in the middle
+      curve += dipPx * 0.15 * Math.sin(t * Math.PI);
+      var x;
+      if (side === 'left') {
+        x = topSpine.x + (botSpine.x - topSpine.x) * t - curve;
+      } else {
+        x = topSpine.x + (botSpine.x - topSpine.x) * t + curve;
       }
-      var sx = (side === 'left') ? topSpine.x - bend : topSpine.x + bend;
-      ctx.lineTo(sx, sy);
+      spinePoints.push({ x: x, y: y });
     }
 
+    // --- Draw the page shape ---
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(topOuter.x, topOuter.y);
+    // Top edge to spine
+    ctx.lineTo(topSpine.x, topSpine.y);
+    // Spine edge down (the curved chain of segments)
+    for (var i = 1; i < spinePoints.length; i++) {
+      ctx.lineTo(spinePoints[i].x, spinePoints[i].y);
+    }
     // Bottom edge
     ctx.lineTo(botOuter.x, botOuter.y);
     // Outer edge back up
     ctx.lineTo(topOuter.x, topOuter.y);
     ctx.closePath();
 
-    // Shadow behind page
-    if (shadowDepth > 0) {
+    // Shadow
+    if (opts.shadow) {
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 8 + shadowDepth * 4;
-      ctx.shadowOffsetY = 2 + shadowDepth;
-      ctx.fillStyle = COLORS.pageBg;
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = C.page;
       ctx.fill();
       ctx.restore();
     }
 
     // Fill page
-    ctx.fillStyle = COLORS.pageBg;
+    ctx.fillStyle = C.page;
     ctx.fill();
 
-    // Noise texture overlay
+    // Clip for interior effects
     ctx.save();
     ctx.clip();
-    var noise = generateNoise(pageW, pageH);
-    var drawX = (side === 'left') ? bk.x + xOffset : spineX + xOffset;
-    ctx.globalAlpha = 0.3;
-    ctx.drawImage(noise, drawX, bk.y, pageW, pageH);
-    ctx.restore();
 
-    // Aged edges gradient
-    ctx.save();
-    ctx.clip();
-    var edgeGrad;
+    // Noise
+    var noise = getNoise(halfW, bk.h);
+    ctx.globalAlpha = 0.25;
+    ctx.drawImage(noise, side === 'left' ? bk.x : spX, bk.y, halfW, bk.h);
+    ctx.globalAlpha = 1;
+
+    // Spine shadow (deep shadow where pages curve in)
+    var sw = halfW * 0.18;
+    var sg;
     if (side === 'left') {
-      edgeGrad = ctx.createLinearGradient(outerX, bk.y, outerX + 30, bk.y);
+      sg = ctx.createLinearGradient(spX, 0, spX - sw, 0);
     } else {
-      edgeGrad = ctx.createLinearGradient(outerX, bk.y, outerX - 30, bk.y);
+      sg = ctx.createLinearGradient(spX, 0, spX + sw, 0);
     }
-    edgeGrad.addColorStop(0, 'rgba(231, 76, 60, 0.06)');
-    edgeGrad.addColorStop(1, 'transparent');
-    ctx.fillStyle = edgeGrad;
-    ctx.fill();
+    sg.addColorStop(0, 'rgba(0,0,0,0.55)');
+    sg.addColorStop(0.4, 'rgba(0,0,0,0.15)');
+    sg.addColorStop(1, 'transparent');
+    ctx.fillStyle = sg;
+    ctx.fillRect(side === 'left' ? spX - sw : spX, bk.y, sw, bk.h);
 
-    // Top/bottom darkening
-    var topGrad = ctx.createLinearGradient(0, bk.y, 0, bk.y + 25);
-    topGrad.addColorStop(0, 'rgba(0,0,0,0.15)');
-    topGrad.addColorStop(1, 'transparent');
-    ctx.fillStyle = topGrad;
-    ctx.fill();
-    ctx.restore();
-
-    // Spine shadow
-    ctx.save();
-    ctx.clip();
-    var spineGrad;
+    // Outer edge darkening (aged look)
+    var ew = 25;
+    var eg;
     if (side === 'left') {
-      spineGrad = ctx.createLinearGradient(spineX + xOffset, 0, spineX + xOffset - 40, 0);
+      eg = ctx.createLinearGradient(bk.x, 0, bk.x + ew, 0);
     } else {
-      spineGrad = ctx.createLinearGradient(spineX + xOffset, 0, spineX + xOffset + 40, 0);
+      eg = ctx.createLinearGradient(bk.x + bk.w, 0, bk.x + bk.w - ew, 0);
     }
-    spineGrad.addColorStop(0, 'rgba(0,0,0,0.4)');
-    spineGrad.addColorStop(0.5, 'rgba(0,0,0,0.1)');
-    spineGrad.addColorStop(1, 'transparent');
-    ctx.fillStyle = spineGrad;
-    ctx.fillRect(side === 'left' ? spineX + xOffset - 40 : spineX + xOffset, bk.y, 40, pageH);
-    ctx.restore();
+    eg.addColorStop(0, 'rgba(231,76,60,0.07)');
+    eg.addColorStop(1, 'transparent');
+    ctx.fillStyle = eg;
+    ctx.fillRect(side === 'left' ? bk.x : bk.x + bk.w - ew, bk.y, ew, bk.h);
+
+    // Top darkening
+    var tg = ctx.createLinearGradient(0, bk.y, 0, bk.y + 30);
+    tg.addColorStop(0, 'rgba(0,0,0,0.2)');
+    tg.addColorStop(1, 'transparent');
+    ctx.fillStyle = tg;
+    ctx.fillRect(bk.x, bk.y, bk.w, 30);
+
+    ctx.restore(); // end clip
 
     // Page border
-    ctx.strokeStyle = COLORS.border;
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
     ctx.lineWidth = 0.5;
     ctx.stroke();
 
     ctx.restore();
-
-    // Return clipping info for content rendering
-    return {
-      side: side,
-      outerX: topOuter.x,
-      spineX: topSpine.x,
-      topY: Math.max(topOuter.y, topSpine.y) + 4,
-      botY: botOuter.y,
-      pInset: pInset,
-    };
   }
 
-  // --- Content Pagination ---
-  function parsePostContent(postId) {
-    var template = document.getElementById(postId);
-    if (!template) return [];
-    var div = document.createElement('div');
-    div.innerHTML = template.innerHTML;
-    var elements = [];
+  // ============================================================
+  //  DRAW THE FULL BOOK — cover, page stack, pages, spine
+  // ============================================================
+  function drawBook() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var bk = bkRect();
+    ctx.clearRect(0, 0, vw, vh);
 
+    // --- Dark wooden table surface ---
+    var tg = ctx.createRadialGradient(vw/2, vh/2, 50, vw/2, vh/2, vw*0.65);
+    tg.addColorStop(0, C.tableMid);
+    tg.addColorStop(1, '#060606');
+    ctx.fillStyle = tg;
+    ctx.fillRect(0, 0, vw, vh);
+
+    // Subtle wood grain lines
+    ctx.save();
+    ctx.globalAlpha = 0.03;
+    ctx.strokeStyle = '#3a2a1a';
+    ctx.lineWidth = 1;
+    for (var gi = 0; gi < 15; gi++) {
+      var gy = bk.y - 60 + gi * ((bk.h + 120) / 15);
+      ctx.beginPath();
+      ctx.moveTo(bk.x - 40, gy);
+      ctx.bezierCurveTo(bk.x + bk.w*0.3, gy + 3, bk.x + bk.w*0.7, gy - 2, bk.x + bk.w + 40, gy + 1);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    var cw = COVER_W; // cover frame thickness
+
+    // --- Book shadow on table ---
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 50;
+    ctx.shadowOffsetY = 18;
+    ctx.fillStyle = C.cover;
+    ctx.fillRect(bk.x - cw, bk.y - cw, bk.w + cw*2, bk.h + cw*2);
+    ctx.restore();
+
+    // --- Back cover (leather/dark material) ---
+    ctx.fillStyle = C.cover;
+    ctx.fillRect(bk.x - cw, bk.y - cw, bk.w + cw*2, bk.h + cw*2);
+
+    // Cover frame with accent stitching
+    ctx.strokeStyle = C.coverAccent;
+    ctx.lineWidth = cw;
+    ctx.strokeRect(bk.x - cw/2, bk.y - cw/2, bk.w + cw, bk.h + cw);
+
+    // Inner accent line (stitching)
+    ctx.strokeStyle = C.accent;
+    ctx.lineWidth = 0.8;
+    ctx.globalAlpha = 0.2;
+    ctx.setLineDash([4, 6]);
+    ctx.strokeRect(bk.x - cw + 4, bk.y - cw + 4, bk.w + cw*2 - 8, bk.h + cw*2 - 8);
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // Outer highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bk.x - cw - 0.5, bk.y - cw - 0.5, bk.w + cw*2 + 1, bk.h + cw*2 + 1);
+
+    // --- Page stack edges (visible at top, bottom, and outer sides) ---
+    // These create the thick "block of pages" look
+    var stackH = PAGE_EDGE_LAYERS * 2;
+
+    // Bottom page edges
+    for (var i = PAGE_EDGE_LAYERS; i >= 1; i--) {
+      var off = i * 1.5;
+      var shade = 24 + i * 3;
+      ctx.fillStyle = 'rgb(' + shade + ',' + shade + ',' + (shade + 8) + ')';
+      ctx.fillRect(bk.x + 2, bk.y + bk.h + off - 1, bk.w - 4, 1.5);
+    }
+
+    // Left outer page edges (left side of book)
+    for (var i = PAGE_EDGE_LAYERS; i >= 1; i--) {
+      var off = i * 1.5;
+      var shade = 22 + i * 3;
+      ctx.fillStyle = 'rgb(' + shade + ',' + shade + ',' + (shade + 8) + ')';
+      ctx.fillRect(bk.x - off, bk.y + 3, 1.5, bk.h - 6);
+    }
+
+    // Right outer page edges
+    for (var i = PAGE_EDGE_LAYERS; i >= 1; i--) {
+      var off = i * 1.5;
+      var shade = 22 + i * 3;
+      ctx.fillStyle = 'rgb(' + shade + ',' + shade + ',' + (shade + 8) + ')';
+      ctx.fillRect(bk.x + bk.w + off - 1.5, bk.y + 3, 1.5, bk.h - 6);
+    }
+
+    // Top page edges
+    for (var i = PAGE_EDGE_LAYERS; i >= 1; i--) {
+      var off = i * 1.5;
+      var shade = 24 + i * 3;
+      ctx.fillStyle = 'rgb(' + shade + ',' + shade + ',' + (shade + 8) + ')';
+      ctx.fillRect(bk.x + 2, bk.y - off, bk.w - 4, 1.5);
+    }
+
+    // --- Draw pages ---
+    if (S.mobile) {
+      drawPage('left', bk, { shadow: true });
+    } else {
+      drawPage('left', bk, { shadow: true });
+      drawPage('right', bk, { shadow: true });
+
+      // --- Spine ---
+      var spX = bk.x + bk.w / 2;
+
+      // Spine groove (dark valley where pages meet)
+      var spG = ctx.createLinearGradient(spX - 6, 0, spX + 6, 0);
+      spG.addColorStop(0, 'rgba(0,0,0,0.0)');
+      spG.addColorStop(0.3, 'rgba(0,0,0,0.6)');
+      spG.addColorStop(0.5, 'rgba(0,0,0,0.8)');
+      spG.addColorStop(0.7, 'rgba(0,0,0,0.6)');
+      spG.addColorStop(1, 'rgba(0,0,0,0.0)');
+      ctx.fillStyle = spG;
+      ctx.fillRect(spX - 6, bk.y - 2, 12, bk.h + 4);
+
+      // Spine line
+      ctx.strokeStyle = C.spine;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(spX, bk.y - cw);
+      ctx.lineTo(spX, bk.y + bk.h + cw);
+      ctx.stroke();
+
+      // Spine highlight
+      ctx.strokeStyle = 'rgba(231,76,60,0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(spX + 1, bk.y);
+      ctx.lineTo(spX + 1, bk.y + bk.h);
+      ctx.stroke();
+    }
+
+    // --- Content ---
+    var sp = S.spread;
+
+    if (S.mobile) {
+      if (S.toc && sp === 0) renderTocTitle(bk);
+      else if (S.toc && sp === 1) renderTocList(bk);
+      else {
+        var di = S.toc ? sp - 2 : sp;
+        if (S.pages[di]) renderContent(S.pages[di], bk, 'left', di + 1);
+      }
+    } else {
+      if (S.toc && sp === 0) {
+        renderTocTitle(bk);
+        renderTocList(bk);
+      } else {
+        var base = S.toc ? (sp - 1) * 2 : sp * 2;
+        if (S.pages[base]) renderContent(S.pages[base], bk, 'left', base + 1);
+        if (S.pages[base + 1]) renderContent(S.pages[base + 1], bk, 'right', base + 2);
+      }
+      // Occasional robot decorations
+      if (sp > 0 && sp % 3 === 0) drawBot(bk.x + bk.w - 55, bk.y + bk.h - 58, 50, C.accent);
+      if (sp > 0 && sp % 4 === 1) drawBot(bk.x + 50, bk.y + bk.h - 58, 45, C.teal);
+    }
+
+    // --- Hover hint ---
+    if (S.hover && !S.turning) {
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      ctx.fillStyle = C.teal;
+      var hx = S.hover === 'left' ? bk.x : bk.x + bk.w/2;
+      var hw = S.mobile ? bk.w : bk.w/2;
+      ctx.fillRect(hx, bk.y, hw, bk.h);
+      ctx.restore();
+    }
+
+    // --- Page turn ---
+    if (S.turning) drawTurn(bk);
+  }
+
+  // --- Page turn animation ---
+  function drawTurn(bk) {
+    var t = S.turnProg;
+    t = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; // ease
+    var halfW = bk.w / 2;
+    var spX = bk.x + halfW;
+    var angle = t * Math.PI;
+    var flipW = halfW * Math.abs(Math.cos(angle));
+
+    ctx.save();
+    var flipX;
+    if (S.turnDir === 1) {
+      flipX = t < 0.5 ? spX : spX - flipW;
+    } else {
+      flipX = t < 0.5 ? spX - flipW : spX;
+    }
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,' + (0.35 * Math.sin(t * Math.PI)) + ')';
+    ctx.fillRect(flipX - 6, bk.y - 3, flipW + 12, bk.h + 6);
+
+    // Turning page
+    ctx.fillStyle = C.pageLt;
+    ctx.fillRect(flipX, bk.y, flipW, bk.h);
+
+    // Curve shading
+    var g = ctx.createLinearGradient(flipX, 0, flipX + flipW, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0.25)');
+    g.addColorStop(0.2, 'rgba(0,0,0,0.05)');
+    g.addColorStop(0.8, 'rgba(0,0,0,0.05)');
+    g.addColorStop(1, 'rgba(0,0,0,0.2)');
+    ctx.fillStyle = g;
+    ctx.fillRect(flipX, bk.y, flipW, bk.h);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  //  CONTENT: Parse, paginate, render
+  // ============================================================
+  function parsePost(id) {
+    var tmpl = document.getElementById(id);
+    if (!tmpl) return [];
+    var div = document.createElement('div');
+    div.innerHTML = tmpl.innerHTML;
+    var out = [];
     for (var i = 0; i < div.childNodes.length; i++) {
-      var node = div.childNodes[i];
-      if (node.nodeType === 3) {
-        var t = node.textContent.trim();
-        if (t) elements.push({ type: 'p', text: t });
-      } else if (node.nodeType === 1) {
-        var tag = node.tagName.toLowerCase();
-        if (tag === 'time') {
-          elements.push({ type: 'date', text: node.textContent.trim() });
-        } else if (tag === 'h1') {
-          elements.push({ type: 'h1', text: node.textContent.trim() });
-        } else if (tag === 'h2') {
-          elements.push({ type: 'h2', text: node.textContent.trim() });
-        } else if (tag === 'h3') {
-          elements.push({ type: 'h3', text: node.textContent.trim() });
-        } else if (tag === 'p') {
-          elements.push({ type: 'p', text: node.textContent.trim() });
-        } else if (tag === 'blockquote') {
-          elements.push({ type: 'quote', text: node.textContent.trim() });
-        } else if (tag === 'ol' || tag === 'ul') {
-          var items = node.querySelectorAll('li');
-          for (var j = 0; j < items.length; j++) {
-            elements.push({ type: 'li', text: (j + 1) + '. ' + items[j].textContent.trim() });
-          }
-        } else if (tag === 'img') {
-          // Skip images in book view
+      var n = div.childNodes[i];
+      if (n.nodeType === 3) {
+        var t = n.textContent.trim();
+        if (t) out.push({ type: 'p', text: t });
+      } else if (n.nodeType === 1) {
+        var tag = n.tagName.toLowerCase();
+        if (tag === 'time') out.push({ type: 'date', text: n.textContent.trim() });
+        else if (tag === 'h1') out.push({ type: 'h1', text: n.textContent.trim() });
+        else if (tag === 'h2') out.push({ type: 'h2', text: n.textContent.trim() });
+        else if (tag === 'h3') out.push({ type: 'h3', text: n.textContent.trim() });
+        else if (tag === 'p') out.push({ type: 'p', text: n.textContent.trim() });
+        else if (tag === 'blockquote') out.push({ type: 'quote', text: n.textContent.trim() });
+        else if (tag === 'ol' || tag === 'ul') {
+          var li = n.querySelectorAll('li');
+          for (var j = 0; j < li.length; j++)
+            out.push({ type: 'li', text: (j+1) + '. ' + li[j].textContent.trim() });
         }
       }
     }
-    return elements;
+    return out;
   }
 
-  function wrapText(text, maxW, font) {
+  function wrap(text, maxW, font) {
     ctx.font = font;
-    var words = text.split(' ');
-    var lines = [];
-    var line = '';
+    var words = text.split(' '), lines = [], line = '';
     for (var i = 0; i < words.length; i++) {
       var test = line + (line ? ' ' : '') + words[i];
       if (ctx.measureText(test).width > maxW && line) {
-        lines.push(line);
-        line = words[i];
-      } else {
-        line = test;
-      }
+        lines.push(line); line = words[i];
+      } else line = test;
     }
     if (line) lines.push(line);
     return lines;
   }
 
-  function paginateContent(elements, bk) {
-    var pageW = bk.w / 2;
-    var usableW = pageW - 60; // padding on each side
-    if (state.isMobile) usableW = bk.w - 50;
-    var pageH = bk.h - 50; // top/bottom padding
-    var pages = [];
-    var currentPage = [];
-    var yPos = 0;
-    var lineH = 20;
-    var titleLineH = 28;
-    var h2LineH = 24;
+  function paginate(elems, bk) {
+    var pw = (S.mobile ? bk.w : bk.w / 2) - 70; // usable text width
+    var ph = bk.h - 60;
+    var pages = [], cur = [], yPos = 0;
 
-    function newPage() {
-      if (currentPage.length > 0) {
-        pages.push(currentPage);
+    function flush() { if (cur.length) { pages.push(cur); cur = []; yPos = 0; } }
+
+    for (var i = 0; i < elems.length; i++) {
+      var el = elems[i];
+      var font, lh, color, pad = 0;
+      switch (el.type) {
+        case 'date': font = '12px '+FMONO; lh = 18; color = C.textMuted; break;
+        case 'h1': font = 'bold 18px '+FSANS; lh = 26; color = C.text; if (yPos) yPos += 14; break;
+        case 'h2': font = 'bold 15px '+FSANS; lh = 22; color = C.teal; if (yPos) yPos += 12; break;
+        case 'h3': font = 'bold 13px '+FSANS; lh = 20; color = C.gold; if (yPos) yPos += 10; break;
+        case 'quote': font = 'italic 12px '+FSANS; lh = 18; color = C.textSec; pad = 14; if (yPos) yPos += 8; break;
+        case 'li': font = '12px '+FSANS; lh = 18; color = C.textSec; pad = 12; if (yPos) yPos += 4; break;
+        default: font = '12.5px '+FSANS; lh = 19; color = C.textSec; if (yPos) yPos += 8;
       }
-      currentPage = [];
-      yPos = 0;
-    }
-
-    function addBlock(item) {
-      var font, lh, color, leftPad = 0;
-      switch (item.type) {
-        case 'date':
-          font = '12px ' + FONT_MONO;
-          lh = 18;
-          color = COLORS.textMuted;
-          break;
-        case 'h1':
-          font = 'bold 20px ' + FONT_SANS;
-          lh = titleLineH;
-          color = COLORS.text;
-          if (yPos > 0) yPos += 12;
-          break;
-        case 'h2':
-          font = 'bold 16px ' + FONT_SANS;
-          lh = h2LineH;
-          color = COLORS.teal;
-          if (yPos > 0) yPos += 14;
-          break;
-        case 'h3':
-          font = 'bold 14px ' + FONT_SANS;
-          lh = 20;
-          color = COLORS.gold;
-          if (yPos > 0) yPos += 10;
-          break;
-        case 'quote':
-          font = 'italic 13px ' + FONT_SANS;
-          lh = lineH;
-          color = COLORS.textSec;
-          leftPad = 16;
-          if (yPos > 0) yPos += 8;
-          break;
-        case 'li':
-          font = '13px ' + FONT_SANS;
-          lh = lineH;
-          color = COLORS.textSec;
-          leftPad = 12;
-          if (yPos > 0) yPos += 4;
-          break;
-        default:
-          font = '13px ' + FONT_SANS;
-          lh = lineH;
-          color = COLORS.textSec;
-          if (yPos > 0) yPos += 8;
-      }
-
-      var lines = wrapText(item.text, usableW - leftPad, font);
-      for (var i = 0; i < lines.length; i++) {
-        if (yPos + lh > pageH) {
-          newPage();
-        }
-        currentPage.push({
-          text: lines[i],
-          y: yPos,
-          font: font,
-          color: color,
-          leftPad: leftPad,
-          isQuote: item.type === 'quote',
-        });
+      var lines = wrap(el.text, pw - pad, font);
+      for (var j = 0; j < lines.length; j++) {
+        if (yPos + lh > ph) flush();
+        cur.push({ text: lines[j], y: yPos, font: font, color: color, pad: pad, quote: el.type === 'quote' });
         yPos += lh;
       }
     }
-
-    for (var i = 0; i < elements.length; i++) {
-      addBlock(elements[i]);
-    }
-    newPage(); // flush last page
-
+    flush();
     return pages;
   }
 
-  // --- Build TOC ---
-  function buildTOC() {
+  function renderContent(pg, bk, side, num) {
+    if (!pg) return;
+    var halfW = bk.w / 2;
+    var px = 35, py = 30;
+    var cx = (side === 'left' || S.mobile) ? bk.x + px : bk.x + halfW + px;
+    var clipX = (side === 'left' || S.mobile) ? bk.x + 2 : bk.x + halfW + 2;
+    var clipW = S.mobile ? bk.w - 4 : halfW - 4;
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(clipX, bk.y + 2, clipW, bk.h - 4); ctx.clip();
+
+    for (var i = 0; i < pg.length; i++) {
+      var it = pg[i], x = cx + it.pad, y = bk.y + py + it.y;
+      if (it.quote) {
+        ctx.fillStyle = C.accent; ctx.globalAlpha = 0.4;
+        ctx.fillRect(cx + 2, y, 2, 15);
+        ctx.globalAlpha = 1;
+      }
+      ctx.font = it.font; ctx.fillStyle = it.color;
+      ctx.fillText(it.text, x, y + 13);
+    }
+
+    // Page number
+    ctx.font = '10px '+FMONO; ctx.fillStyle = C.textMuted; ctx.globalAlpha = 0.4;
+    var nt = String(num);
+    if (side === 'right' && !S.mobile) {
+      ctx.fillText(nt, cx + clipW - px*2 - ctx.measureText(nt).width, bk.y + bk.h - 14);
+    } else {
+      ctx.fillText(nt, cx, bk.y + bk.h - 14);
+    }
+    ctx.restore();
+  }
+
+  // --- TOC pages ---
+  function getTocPosts() {
     var posts = [];
     for (var i = 1; i <= 10; i++) {
       var tmpl = document.getElementById('post-' + i);
       if (!tmpl) break;
-      var div = document.createElement('div');
-      div.innerHTML = tmpl.innerHTML;
-      var h1 = div.querySelector('h1');
-      var time = div.querySelector('time');
-      if (h1) {
-        posts.push({
-          id: 'post-' + i,
-          title: h1.textContent.trim(),
-          date: time ? time.textContent.trim() : '',
-        });
-      }
+      var d = document.createElement('div'); d.innerHTML = tmpl.innerHTML;
+      var h = d.querySelector('h1'), t = d.querySelector('time');
+      if (h) posts.push({ id: 'post-'+i, title: h.textContent.trim(), date: t ? t.textContent.trim() : '' });
     }
     return posts;
   }
 
-  // --- Render Page Content ---
-  function renderPageContent(pageData, bk, side, pageNum) {
-    if (!pageData) return;
-    var pageW = bk.w / 2;
-    var padX = 30;
-    var padY = 28;
-    var contentX;
-    if (state.isMobile) {
-      contentX = bk.x + padX;
-    } else if (side === 'left') {
-      contentX = bk.x + padX;
-    } else {
-      contentX = bk.x + bk.w / 2 + padX;
-    }
+  function renderTocTitle(bk) {
+    var px = 35, py = 35;
+    var x = bk.x + px, y = bk.y + py;
+    var pw = S.mobile ? bk.w : bk.w / 2;
 
     ctx.save();
+    ctx.beginPath(); ctx.rect(bk.x + 2, bk.y + 2, pw - 4, bk.h - 4); ctx.clip();
 
-    // Clip to page area roughly
-    var clipX = (side === 'left' || state.isMobile) ? bk.x + 2 : bk.x + bk.w / 2 + 2;
-    var clipW = state.isMobile ? bk.w - 4 : pageW - 4;
-    ctx.beginPath();
-    ctx.rect(clipX, bk.y + 2, clipW, bk.h - 4);
-    ctx.clip();
-
-    for (var i = 0; i < pageData.length; i++) {
-      var item = pageData[i];
-      var x = contentX + item.leftPad;
-      var y = bk.y + padY + item.y;
-
-      // Quote left border
-      if (item.isQuote) {
-        ctx.fillStyle = COLORS.accent;
-        ctx.globalAlpha = 0.5;
-        ctx.fillRect(contentX + 2, y - 2, 2, 16);
-        ctx.globalAlpha = 1;
-      }
-
-      ctx.font = item.font;
-      ctx.fillStyle = item.color;
-      ctx.fillText(item.text, x, y + 13);
-    }
-
-    // Page number
-    ctx.font = '11px ' + FONT_MONO;
-    ctx.fillStyle = COLORS.textMuted;
-    ctx.globalAlpha = 0.5;
-    var numText = String(pageNum);
-    if (side === 'left' || state.isMobile) {
-      ctx.fillText(numText, contentX, bk.y + bk.h - 12);
-    } else {
-      var tw = ctx.measureText(numText).width;
-      ctx.fillText(numText, contentX + clipW - padX * 2 - tw, bk.y + bk.h - 12);
-    }
-
-    ctx.restore();
-  }
-
-  // --- Render TOC Page ---
-  function renderTOCLeft(bk) {
-    var padX = 30, padY = 30;
-    var x = bk.x + padX;
-    var y = bk.y + padY;
-    var pageW = state.isMobile ? bk.w : bk.w / 2;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(bk.x + 2, bk.y + 2, pageW - 4, bk.h - 4);
-    ctx.clip();
-
-    // Title
-    ctx.font = 'bold 11px ' + FONT_MONO;
-    ctx.fillStyle = COLORS.accent;
+    // Label
+    ctx.font = 'bold 11px '+FMONO; ctx.fillStyle = C.accent;
     ctx.fillText('// RANDROID\'S', x, y + 14);
 
-    ctx.font = 'bold 26px ' + FONT_SANS;
-    ctx.fillStyle = COLORS.text;
-    ctx.fillText('CODEX', x, y + 48);
+    // Title
+    ctx.font = 'bold 28px '+FSANS; ctx.fillStyle = C.text;
+    ctx.fillText('CODEX', x, y + 50);
 
     // Decorative line
-    ctx.strokeStyle = COLORS.accent;
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.4;
-    ctx.beginPath();
-    ctx.moveTo(x, y + 58);
-    ctx.lineTo(x + 120, y + 58);
-    ctx.stroke();
+    ctx.strokeStyle = C.accent; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.35;
+    ctx.beginPath(); ctx.moveTo(x, y + 62); ctx.lineTo(x + 130, y + 62); ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // Robot mascot
-    drawRobot(ctx, x + 60, y + 120, 80, COLORS.teal);
+    // Robot
+    drawBot(x + 70, y + 135, 90, C.teal);
 
     // Stats
-    var statsY = y + 185;
-    ctx.font = '11px ' + FONT_MONO;
-    ctx.fillStyle = COLORS.textMuted;
-    ctx.fillText('projects: 27', x, statsY);
-    ctx.fillText('playable: 15', x, statsY + 18);
-    ctx.fillText('languages: 9', x, statsY + 36);
-    ctx.fillText('agents: countless', x, statsY + 54);
+    var sy = y + 210;
+    ctx.font = '11px '+FMONO; ctx.fillStyle = C.textMuted;
+    ctx.fillText('projects ........ 27', x, sy);
+    ctx.fillText('playable ........ 15', x, sy + 20);
+    ctx.fillText('languages ....... 9', x, sy + 40);
+    ctx.fillText('agents .... countless', x, sy + 60);
+
+    // Decorative teal line
+    ctx.strokeStyle = C.teal; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.2;
+    ctx.beginPath(); ctx.moveTo(x, sy + 78); ctx.lineTo(x + 160, sy + 78); ctx.stroke();
+    ctx.globalAlpha = 1;
 
     // Subtitle
-    ctx.font = 'italic 12px ' + FONT_SANS;
-    ctx.fillStyle = COLORS.textSec;
-    ctx.globalAlpha = 0.6;
-    ctx.fillText('Thoughts from the Dojo', x, bk.y + bk.h - 20);
+    ctx.font = 'italic 12px '+FSANS; ctx.fillStyle = C.textSec; ctx.globalAlpha = 0.5;
+    ctx.fillText('Thoughts from the Dojo', x, bk.y + bk.h - 22);
     ctx.globalAlpha = 1;
 
     ctx.restore();
   }
 
-  function renderTOCRight(bk) {
-    var padX = 30, padY = 30;
-    var spineX = bk.x + bk.w / 2;
-    var x = state.isMobile ? bk.x + padX : spineX + padX;
-    var y = bk.y + padY;
-    var pageW = state.isMobile ? bk.w : bk.w / 2;
+  function renderTocList(bk) {
+    var px = 35, py = 35;
+    var spX = bk.x + bk.w / 2;
+    var x = S.mobile ? bk.x + px : spX + px;
+    var y = bk.y + py;
+    var pw = S.mobile ? bk.w : bk.w / 2;
+    var clipX = S.mobile ? bk.x + 2 : spX + 2;
 
     ctx.save();
-    var clipX = state.isMobile ? bk.x + 2 : spineX + 2;
-    ctx.beginPath();
-    ctx.rect(clipX, bk.y + 2, pageW - 4, bk.h - 4);
-    ctx.clip();
+    ctx.beginPath(); ctx.rect(clipX, bk.y + 2, pw - 4, bk.h - 4); ctx.clip();
 
     // Header
-    ctx.font = 'bold 11px ' + FONT_MONO;
-    ctx.fillStyle = COLORS.teal;
+    ctx.font = 'bold 11px '+FMONO; ctx.fillStyle = C.teal;
     ctx.fillText('TABLE OF CONTENTS', x, y + 14);
 
-    // Decorative line
-    ctx.strokeStyle = COLORS.teal;
-    ctx.lineWidth = 0.5;
-    ctx.globalAlpha = 0.3;
-    ctx.beginPath();
-    ctx.moveTo(x, y + 22);
-    ctx.lineTo(x + pageW - padX * 2 - 10, y + 22);
-    ctx.stroke();
+    ctx.strokeStyle = C.teal; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.25;
+    ctx.beginPath(); ctx.moveTo(x, y + 24); ctx.lineTo(x + pw - px*2 - 10, y + 24); ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // Entries
-    var toc = buildTOC();
-    state.tocEntries = [];
-    var entryY = y + 48;
-    var availW = pageW - padX * 2 - 20;
+    var posts = getTocPosts();
+    S.tocHits = [];
+    var ey = y + 52;
+    var aw = pw - px*2 - 20;
 
-    for (var i = 0; i < toc.length; i++) {
-      var entry = toc[i];
+    for (var i = 0; i < posts.length; i++) {
+      var p = posts[i];
+
       // Number
-      ctx.font = 'bold 14px ' + FONT_MONO;
-      ctx.fillStyle = COLORS.accent;
-      ctx.fillText((i + 1) + '.', x, entryY);
+      ctx.font = 'bold 15px '+FMONO; ctx.fillStyle = C.accent;
+      ctx.fillText((i+1) + '.', x, ey + 2);
 
-      // Title (truncate if needed)
-      ctx.font = '13px ' + FONT_SANS;
-      ctx.fillStyle = COLORS.text;
-      var title = entry.title;
-      while (ctx.measureText(title).width > availW - 30 && title.length > 20) {
+      // Title
+      ctx.font = '13px '+FSANS; ctx.fillStyle = C.text;
+      var title = p.title;
+      while (ctx.measureText(title).width > aw - 40 && title.length > 20)
         title = title.slice(0, -4) + '...';
-      }
-      ctx.fillText(title, x + 24, entryY);
+      ctx.fillText(title, x + 28, ey);
 
       // Date
-      ctx.font = '10px ' + FONT_MONO;
-      ctx.fillStyle = COLORS.textMuted;
-      ctx.fillText(entry.date, x + 24, entryY + 18);
+      ctx.font = '10px '+FMONO; ctx.fillStyle = C.textMuted;
+      ctx.fillText(p.date, x + 28, ey + 18);
 
-      // Dots line
-      ctx.strokeStyle = COLORS.border;
-      ctx.lineWidth = 0.5;
-      ctx.setLineDash([2, 4]);
-      ctx.beginPath();
-      ctx.moveTo(x + 24, entryY + 28);
-      ctx.lineTo(x + availW, entryY + 28);
-      ctx.stroke();
+      // Dotted separator
+      ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
+      ctx.setLineDash([2, 5]);
+      ctx.beginPath(); ctx.moveTo(x + 28, ey + 30); ctx.lineTo(x + aw, ey + 30); ctx.stroke();
       ctx.setLineDash([]);
 
-      // Store for click detection
-      state.tocEntries.push({
-        id: entry.id,
-        x: clipX,
-        y: entryY - 10,
-        w: pageW - 4,
-        h: 45,
-      });
+      S.tocHits.push({ id: p.id, x: clipX, y: ey - 10, w: pw - 4, h: 48 });
+      ey += 56;
+    }
 
-      entryY += 52;
+    // Small robot at bottom right
+    if (!S.mobile) {
+      drawBot(x + aw - 20, bk.y + bk.h - 55, 40, C.accent);
     }
 
     ctx.restore();
   }
 
-  // --- Draw Full Book ---
-  function drawBook() {
-    var w = window.innerWidth;
-    var h = window.innerHeight;
-    var bk = getBookRect();
-
-    // Clear
-    ctx.clearRect(0, 0, w, h);
-
-    // Background surface (dark table)
-    var tableGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.7);
-    tableGrad.addColorStop(0, '#12100e');
-    tableGrad.addColorStop(1, '#080808');
-    ctx.fillStyle = tableGrad;
-    ctx.fillRect(0, 0, w, h);
-
-    // Book shadow on table
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetY = 15;
-    ctx.fillStyle = COLORS.coverDark;
-    ctx.fillRect(bk.x - 6, bk.y - 4, bk.w + 12, bk.h + 12);
-    ctx.restore();
-
-    // Back cover
-    ctx.fillStyle = COLORS.coverDark;
-    ctx.fillRect(bk.x - 4, bk.y - 3, bk.w + 8, bk.h + 8);
-    // Cover edge accent
-    ctx.strokeStyle = COLORS.accent;
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.2;
-    ctx.strokeRect(bk.x - 4, bk.y - 3, bk.w + 8, bk.h + 8);
-    ctx.globalAlpha = 1;
-
-    // Page stack (visible edges underneath)
-    for (var s = 3; s >= 1; s--) {
-      ctx.fillStyle = s % 2 === 0 ? '#1d1d29' : '#1b1b27';
-      ctx.globalAlpha = 0.5;
-      var off = s * 2;
-      ctx.fillRect(bk.x + off, bk.y + bk.h + off - 2, bk.w - off * 2, 2);
-      ctx.fillRect(bk.x - off, bk.y + off, 2, bk.h - off * 2);
-      ctx.fillRect(bk.x + bk.w + off - 2, bk.y + off, 2, bk.h - off * 2);
-    }
-    ctx.globalAlpha = 1;
-
-    // Total pages
-    var totalPages = state.pages.length;
-    var spread = state.currentSpread;
-
-    if (state.isMobile) {
-      // Single page mode
-      var pageIdx = spread;
-      drawCurvedPage('left', bk, { shadowDepth: 2 });
-
-      if (state.tocMode && pageIdx === 0) {
-        renderTOCLeft(bk);
-      } else if (state.tocMode && pageIdx === 1) {
-        renderTOCRight(bk);
-      } else {
-        var dataIdx = state.tocMode ? pageIdx - 2 : pageIdx;
-        if (state.pages[dataIdx]) {
-          renderPageContent(state.pages[dataIdx], bk, 'left', dataIdx + 1);
-        }
-      }
-    } else {
-      // Spread mode: left and right pages
-      var leftIdx, rightIdx;
-      if (state.tocMode) {
-        leftIdx = spread * 2;
-        rightIdx = spread * 2 + 1;
-      } else {
-        leftIdx = spread * 2;
-        rightIdx = spread * 2 + 1;
-      }
-
-      // Draw left page
-      drawCurvedPage('left', bk, { shadowDepth: 2 });
-      // Draw right page
-      drawCurvedPage('right', bk, { shadowDepth: 2 });
-
-      // Spine line
-      var spineX = bk.x + bk.w / 2;
-      ctx.strokeStyle = COLORS.spine;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(spineX, bk.y);
-      ctx.lineTo(spineX, bk.y + bk.h);
-      ctx.stroke();
-
-      // Spine glow
-      var sg = ctx.createLinearGradient(spineX - 8, 0, spineX + 8, 0);
-      sg.addColorStop(0, 'transparent');
-      sg.addColorStop(0.5, 'rgba(231, 76, 60, 0.07)');
-      sg.addColorStop(1, 'transparent');
-      ctx.fillStyle = sg;
-      ctx.fillRect(spineX - 8, bk.y, 16, bk.h);
-
-      // Render content
-      if (state.tocMode && spread === 0) {
-        renderTOCLeft(bk);
-        renderTOCRight(bk);
-      } else {
-        var baseIdx = state.tocMode ? (spread - 1) * 2 : spread * 2;
-        if (state.tocMode && spread > 0) {
-          if (state.pages[baseIdx]) renderPageContent(state.pages[baseIdx], bk, 'left', baseIdx + 1);
-          if (state.pages[baseIdx + 1]) renderPageContent(state.pages[baseIdx + 1], bk, 'right', baseIdx + 2);
-        } else if (!state.tocMode) {
-          if (state.pages[leftIdx]) renderPageContent(state.pages[leftIdx], bk, 'left', leftIdx + 1);
-          if (state.pages[rightIdx]) renderPageContent(state.pages[rightIdx], bk, 'right', rightIdx + 1);
-        }
-      }
-
-      // Robot decoration on non-TOC pages (bottom right corner occasionally)
-      if (spread > 0 && spread % 3 === 0) {
-        drawRobot(ctx, bk.x + bk.w - 50, bk.y + bk.h - 55, 50, COLORS.accent);
-      }
-      if (spread > 0 && spread % 4 === 1) {
-        drawRobot(ctx, bk.x + 45, bk.y + bk.h - 55, 45, COLORS.teal);
-      }
-    }
-
-    // Hover indicator
-    if (state.hoverSide && !state.turning) {
-      ctx.save();
-      ctx.globalAlpha = 0.08;
-      ctx.fillStyle = COLORS.teal;
-      if (state.hoverSide === 'left') {
-        ctx.fillRect(bk.x, bk.y, bk.w / 2, bk.h);
-      } else {
-        ctx.fillRect(bk.x + bk.w / 2, bk.y, bk.w / 2, bk.h);
-      }
-      ctx.restore();
-    }
-
-    // Page turn animation overlay
-    if (state.turning) {
-      drawPageTurn(bk);
-    }
+  // ============================================================
+  //  NAVIGATION + EVENTS
+  // ============================================================
+  function maxSpread() {
+    var tot = S.toc ? S.pages.length + 2 : S.pages.length;
+    return S.mobile ? tot - 1 : Math.max(Math.ceil(tot / 2) - 1, 0);
   }
 
-  // --- Page Turn Animation ---
-  function drawPageTurn(bk) {
-    var t = state.turnProgress;
-    // Ease in-out
-    t = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-
-    var pageW = bk.w / 2;
-    var spineX = bk.x + bk.w / 2;
-
-    ctx.save();
-
-    if (state.turnDirection === 1) {
-      // Turning forward: right page lifts and goes left
-      var angle = t * Math.PI; // 0 to PI
-      var flipW = pageW * Math.abs(Math.cos(angle));
-      var flipX;
-      if (t < 0.5) {
-        flipX = spineX;
-      } else {
-        flipX = spineX - flipW;
-      }
-
-      // Shadow under turning page
-      ctx.fillStyle = 'rgba(0,0,0,' + (0.3 * Math.sin(t * Math.PI)) + ')';
-      ctx.fillRect(flipX - 5, bk.y - 2, flipW + 10, bk.h + 4);
-
-      // The turning page
-      ctx.fillStyle = COLORS.pageLight;
-      ctx.fillRect(flipX, bk.y, flipW, bk.h);
-
-      // Gradient to simulate page curve
-      var grad = ctx.createLinearGradient(flipX, 0, flipX + flipW, 0);
-      grad.addColorStop(0, 'rgba(0,0,0,0.2)');
-      grad.addColorStop(0.3, 'rgba(0,0,0,0)');
-      grad.addColorStop(0.7, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, 'rgba(0,0,0,0.15)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(flipX, bk.y, flipW, bk.h);
-    } else {
-      // Turning backward: left page lifts and goes right
-      var angle = t * Math.PI;
-      var flipW = pageW * Math.abs(Math.cos(angle));
-      var flipX;
-      if (t < 0.5) {
-        flipX = spineX - flipW;
-      } else {
-        flipX = spineX;
-      }
-
-      ctx.fillStyle = 'rgba(0,0,0,' + (0.3 * Math.sin(t * Math.PI)) + ')';
-      ctx.fillRect(flipX - 5, bk.y - 2, flipW + 10, bk.h + 4);
-
-      ctx.fillStyle = COLORS.pageLight;
-      ctx.fillRect(flipX, bk.y, flipW, bk.h);
-
-      var grad = ctx.createLinearGradient(flipX, 0, flipX + flipW, 0);
-      grad.addColorStop(0, 'rgba(0,0,0,0.15)');
-      grad.addColorStop(0.3, 'rgba(0,0,0,0)');
-      grad.addColorStop(0.7, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, 'rgba(0,0,0,0.2)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(flipX, bk.y, flipW, bk.h);
-    }
-
-    ctx.restore();
+  function turn(dir) {
+    if (S.turning) return;
+    var ns = S.spread + dir;
+    if (ns < 0 || ns > maxSpread()) return;
+    S.turning = true; S.turnDir = dir; S.turnStart = performance.now(); S.turnProg = 0;
+    (function anim(now) {
+      S.turnProg = Math.min((now - S.turnStart) / TURN_MS, 1);
+      if (S.turnProg >= 1) { S.turning = false; S.spread = ns; S.turnProg = 0; render(); return; }
+      render(); requestAnimationFrame(anim);
+    })(performance.now());
   }
 
-  // --- Page Navigation ---
-  function getMaxSpread() {
-    var totalPages = state.pages.length;
-    if (state.isMobile) {
-      var total = state.tocMode ? totalPages + 2 : totalPages;
-      return total - 1;
-    } else {
-      var total = state.tocMode ? totalPages + 2 : totalPages;
-      return Math.ceil(total / 2) - 1;
-    }
-  }
-
-  function turnPage(dir) {
-    if (state.turning) return;
-    var maxSpread = getMaxSpread();
-    var newSpread = state.currentSpread + dir;
-    if (newSpread < 0 || newSpread > maxSpread) return;
-
-    state.turning = true;
-    state.turnDirection = dir;
-    state.turnStartTime = performance.now();
-    state.turnProgress = 0;
-
-    function animateTurn(now) {
-      var elapsed = now - state.turnStartTime;
-      state.turnProgress = Math.min(elapsed / PAGE_TURN_MS, 1);
-
-      if (state.turnProgress >= 1) {
-        state.turning = false;
-        state.currentSpread = newSpread;
-        state.turnProgress = 0;
-        render();
-        return;
-      }
-      render();
-      requestAnimationFrame(animateTurn);
-    }
-    requestAnimationFrame(animateTurn);
-  }
-
-  function jumpToPost(postId) {
-    var elements = parsePostContent(postId);
-    var bk = getBookRect();
-    state.pages = paginateContent(elements, bk);
-    state.postId = postId;
-    state.tocMode = true;
-    // Jump to spread 1 (first content spread after TOC)
-    state.currentSpread = state.isMobile ? 2 : 1;
+  function jumpPost(id) {
+    var elems = parsePost(id);
+    var bk = bkRect();
+    S.pages = paginate(elems, bk);
+    S.postId = id; S.toc = true;
+    S.spread = S.mobile ? 2 : 1;
     render();
   }
 
-  // --- Render Loop ---
-  function render() {
-    drawBook();
-  }
+  function render() { drawBook(); }
 
-  function startRenderLoop() {
-    render();
-    // We don't need continuous RAF - render on events only
-  }
+  // --- Click ---
+  function onClick(e) {
+    if (S.turning) return;
+    var bk = bkRect();
+    var r = cvs.getBoundingClientRect();
+    var mx = e.clientX - r.left, my = e.clientY - r.top;
 
-  // --- Event Handlers ---
-  function handleClick(e) {
-    if (state.turning) return;
-    var bk = getBookRect();
-    var rect = canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-    var my = e.clientY - rect.top;
-
-    // Check if click is outside book
-    if (mx < bk.x - 20 || mx > bk.x + bk.w + 20 || my < bk.y - 20 || my > bk.y + bk.h + 20) {
-      closeBook();
-      return;
+    // Outside book = close
+    if (mx < bk.x - 30 || mx > bk.x + bk.w + 30 || my < bk.y - 30 || my > bk.y + bk.h + 30) {
+      closeBook(); return;
     }
 
-    // Check TOC clicks
-    if (state.tocMode && state.currentSpread === 0 && !state.isMobile) {
-      for (var i = 0; i < state.tocEntries.length; i++) {
-        var entry = state.tocEntries[i];
-        if (mx >= entry.x && mx <= entry.x + entry.w && my >= entry.y && my <= entry.y + entry.h) {
-          jumpToPost(entry.id);
-          return;
-        }
-      }
-    }
-    // Mobile TOC on page index 1
-    if (state.tocMode && state.isMobile && state.currentSpread === 1) {
-      for (var i = 0; i < state.tocEntries.length; i++) {
-        var entry = state.tocEntries[i];
-        if (mx >= entry.x && mx <= entry.x + entry.w && my >= entry.y && my <= entry.y + entry.h) {
-          jumpToPost(entry.id);
-          return;
+    // TOC clicks
+    var isTocSpread = S.toc && S.spread === 0 && !S.mobile;
+    var isTocMobile = S.toc && S.mobile && S.spread === 1;
+    if (isTocSpread || isTocMobile) {
+      for (var i = 0; i < S.tocHits.length; i++) {
+        var h = S.tocHits[i];
+        if (mx >= h.x && mx <= h.x + h.w && my >= h.y && my <= h.y + h.h) {
+          jumpPost(h.id); return;
         }
       }
     }
 
-    // Page turn based on click side
-    var midX = state.isMobile ? bk.x + bk.w / 2 : bk.x + bk.w / 2;
-    if (mx > midX) {
-      turnPage(1);
-    } else {
-      turnPage(-1);
-    }
+    // Page turn
+    var mid = S.mobile ? bk.x + bk.w / 2 : bk.x + bk.w / 2;
+    turn(mx > mid ? 1 : -1);
   }
 
-  function handleMouseMove(e) {
-    if (state.turning) return;
-    var bk = getBookRect();
-    var rect = canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-
-    if (mx < bk.x || mx > bk.x + bk.w) {
-      if (state.hoverSide !== null) {
-        state.hoverSide = null;
-        render();
-      }
-      return;
-    }
-
-    var newSide = mx < bk.x + bk.w / 2 ? 'left' : 'right';
-    if (newSide !== state.hoverSide) {
-      state.hoverSide = newSide;
-      render();
-    }
+  function onMove(e) {
+    if (S.turning) return;
+    var bk = bkRect(), r = cvs.getBoundingClientRect();
+    var mx = e.clientX - r.left;
+    var ns = (mx < bk.x || mx > bk.x + bk.w) ? null : (mx < bk.x + bk.w/2 ? 'left' : 'right');
+    if (ns !== S.hover) { S.hover = ns; render(); }
   }
 
-  function handleKeyDown(e) {
-    if (!state.isOpen) return;
-    if (e.key === 'Escape') {
-      closeBook();
-      e.preventDefault();
-    } else if (e.key === 'ArrowRight' || e.key === ' ') {
-      turnPage(1);
-      e.preventDefault();
-    } else if (e.key === 'ArrowLeft') {
-      turnPage(-1);
-      e.preventDefault();
-    }
+  function onKey(e) {
+    if (!S.open) return;
+    if (e.key === 'Escape') { closeBook(); e.preventDefault(); }
+    else if (e.key === 'ArrowRight' || e.key === ' ') { turn(1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { turn(-1); e.preventDefault(); }
   }
 
-  // Touch support
-  var touchStartX = 0;
-  function handleTouchStart(e) {
-    touchStartX = e.touches[0].clientX;
-  }
-  function handleTouchEnd(e) {
-    if (!state.isOpen) return;
-    var dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 50) {
-      if (dx < 0) turnPage(1);
-      else turnPage(-1);
-    } else {
-      // Tap - treat as click
-      var fakeEvent = { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
-      handleClick(fakeEvent);
-    }
+  var tx0 = 0;
+  function onTouchStart(e) { tx0 = e.touches[0].clientX; }
+  function onTouchEnd(e) {
+    if (!S.open) return;
+    var dx = e.changedTouches[0].clientX - tx0;
+    if (Math.abs(dx) > 50) turn(dx < 0 ? 1 : -1);
+    else onClick({ clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY });
   }
 
   // --- Open / Close ---
   function openBook(postId) {
-    if (!overlay) createDOM();
+    if (!overlay) initDOM();
     resize();
-
     if (postId) {
-      var elements = parsePostContent(postId);
-      var bk = getBookRect();
-      state.pages = paginateContent(elements, bk);
-      state.postId = postId;
-      state.tocMode = true;
-      state.currentSpread = state.isMobile ? 2 : 1;
+      S.pages = paginate(parsePost(postId), bkRect());
+      S.postId = postId; S.toc = true;
+      S.spread = S.mobile ? 2 : 1;
     } else {
-      // Open to TOC
-      state.pages = [];
-      state.postId = null;
-      state.tocMode = true;
-      state.currentSpread = 0;
+      S.pages = []; S.postId = null; S.toc = true; S.spread = 0;
     }
-
-    state.isOpen = true;
-    state.turning = false;
-    state.hoverSide = null;
-
+    S.open = true; S.turning = false; S.hover = null;
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    // Trigger fade-in
     requestAnimationFrame(function () {
-      overlay.classList.add('open');
-      overlay.classList.add('fade-in');
-      startRenderLoop();
+      overlay.classList.add('open', 'fade-in');
+      render();
     });
-
-    // Bind events
-    canvas.addEventListener('click', handleClick);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
-    canvas.addEventListener('touchend', handleTouchEnd);
-    closeBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      closeBook();
-    });
-    document.addEventListener('keydown', handleKeyDown);
+    cvs.addEventListener('click', onClick);
+    cvs.addEventListener('mousemove', onMove);
+    cvs.addEventListener('touchstart', onTouchStart, { passive: true });
+    cvs.addEventListener('touchend', onTouchEnd);
+    closeBtn.addEventListener('click', function (e) { e.stopPropagation(); closeBook(); });
+    document.addEventListener('keydown', onKey);
     window.addEventListener('resize', onResize);
   }
 
   function onResize() {
-    if (!state.isOpen) return;
+    if (!S.open) return;
     resize();
-    // Re-paginate
-    if (state.postId) {
-      var elements = parsePostContent(state.postId);
-      var bk = getBookRect();
-      state.pages = paginateContent(elements, bk);
-    }
+    if (S.postId) S.pages = paginate(parsePost(S.postId), bkRect());
     render();
   }
 
   function closeBook() {
-    if (!state.isOpen) return;
-    state.isOpen = false;
-    overlay.classList.remove('open');
-    overlay.classList.remove('fade-in');
+    if (!S.open) return;
+    S.open = false;
+    overlay.classList.remove('open', 'fade-in');
     document.body.style.overflow = '';
-
     setTimeout(function () {
-      if (!state.isOpen) {
+      if (!S.open) {
         overlay.style.display = 'none';
-        canvas.removeEventListener('click', handleClick);
-        canvas.removeEventListener('mousemove', handleMouseMove);
-        canvas.removeEventListener('touchstart', handleTouchStart);
-        canvas.removeEventListener('touchend', handleTouchEnd);
-        document.removeEventListener('keydown', handleKeyDown);
+        cvs.removeEventListener('click', onClick);
+        cvs.removeEventListener('mousemove', onMove);
+        cvs.removeEventListener('touchstart', onTouchStart);
+        cvs.removeEventListener('touchend', onTouchEnd);
+        document.removeEventListener('keydown', onKey);
         window.removeEventListener('resize', onResize);
       }
     }, 400);
   }
 
-  // --- Public API ---
   window.RandroidCodex = {
     open: openBook,
     close: closeBook,
-    isOpen: function () { return state.isOpen; },
+    isOpen: function () { return S.open; },
   };
-
 })();
