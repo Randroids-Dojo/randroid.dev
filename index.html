@@ -57,15 +57,15 @@
       </p>
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="hero-stat-number" data-count="33">0</div>
+          <div class="hero-stat-number" data-count="39">0</div>
           <div class="hero-stat-label">Projects</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-number" data-count="19">0</div>
+          <div class="hero-stat-number" data-count="21">0</div>
           <div class="hero-stat-label">Playable</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-number" data-count="9">0</div>
+          <div class="hero-stat-number" data-count="10">0</div>
           <div class="hero-stat-label">Languages</div>
         </div>
       </div>
@@ -88,6 +88,62 @@
     </div>
 
     <div class="playable-grid">
+
+      <!-- VibePins -->
+      <div class="playable-card" data-url="https://vibe-pins.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(253, 203, 110, 0.15);">&#x1F3B3;</div>
+            <div>
+              <div class="playable-card-title">VibePins</div>
+              <div class="playable-card-tagline">A duckpin bowling game with satisfying throws and arcade lane feel</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://vibe-pins.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/VibePins" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch VibePins</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag">TypeScript</span>
+          <span class="tech-tag teal">Bowling</span>
+          <span class="tech-tag gold">Arcade</span>
+        </div>
+      </div>
+
+      <!-- Clankers -->
+      <div class="playable-card" data-url="https://clankers-mocha.vercel.app">
+        <div class="playable-card-header">
+          <div class="playable-card-info">
+            <div class="playable-card-icon" style="background: rgba(231, 76, 60, 0.15);">&#x1F0CF;</div>
+            <div>
+              <div class="playable-card-title">Clankers</div>
+              <div class="playable-card-tagline">Humans vs machines on a scorched Earth in an open-source card battler</div>
+            </div>
+          </div>
+          <div class="playable-card-actions">
+            <a href="https://clankers-mocha.vercel.app" target="_blank" rel="noopener" class="btn-icon" title="Open in new tab">&#x2197;</a>
+            <a href="https://github.com/Randroids-Dojo/Clankers" target="_blank" rel="noopener" class="btn-icon" title="Source code">&lt;/&gt;</a>
+          </div>
+        </div>
+        <div class="playable-card-embed">
+          <div class="embed-placeholder" onclick="loadEmbed(this)">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+            <span class="embed-label">Click to launch Clankers</span>
+          </div>
+        </div>
+        <div class="playable-card-footer">
+          <span class="tech-tag">JavaScript</span>
+          <span class="tech-tag teal">Card Battler</span>
+          <span class="tech-tag pink">Strategy</span>
+        </div>
+      </div>
 
       <!-- VibeCity -->
       <div class="playable-card" data-url="https://vibe-city-weld.vercel.app">
@@ -647,6 +703,86 @@
 
     <div class="tools-grid">
 
+      <!-- VibeTCG -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(231, 76, 60, 0.15);">&#x1F0CF;</div>
+        </div>
+        <h3>VibeTCG</h3>
+        <p class="story-card-narrative">
+          A spec-only ghost library for card battlers. VibeTCG turns a detailed GDD into a playable browser game through any coding agent, then anchors the implementation with <span class="highlight">38 test cases and a golden trace</span> so independent builds stay rule-identical. Clankers is the first proof that the spec can become a real game without becoming a one-off.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-html"></span> Spec + Tests</span>
+          <a href="https://github.com/Randroids-Dojo/VibeTCG" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- dots-html -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(236, 194, 64, 0.15);">&#x25CF;</div>
+        </div>
+        <h3>dots-html</h3>
+        <p class="story-card-narrative">
+          A Zig fork of the dots task tracker that swaps Markdown ledgers for <span class="highlight">HTML-backed task files</span>. It keeps the tiny command-line workflow that makes dots useful for long agent runs, while testing whether richer document structure can make status, dependencies, and completion reasons easier to audit across sessions.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-zig"></span> Zig</span>
+          <a href="https://github.com/Randroids-Dojo/dots-html" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- VibeKit -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(49, 120, 198, 0.15);">&#x1F9F0;</div>
+        </div>
+        <h3>VibeKit</h3>
+        <p class="story-card-narrative">
+          The reusable starter kit behind faster vibe-coded games and apps. VibeKit collects the components, conventions, and bootstrap pieces that kept recurring across projects, turning ad hoc setup work into a <span class="highlight">shared TypeScript foundation</span> for the next experiment.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-typescript"></span> TypeScript</span>
+          <a href="https://github.com/Randroids-Dojo/VibeKit" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- CutScript -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(0, 206, 201, 0.15);">&#x2702;&#xFE0F;</div>
+        </div>
+        <h3>CutScript</h3>
+        <p class="story-card-narrative">
+          An open-source AI-powered video editor where text becomes the editing surface. CutScript explores the workflow of <span class="highlight">editing video by editing words</span>: trim, rearrange, and shape the final cut through a script-first interface instead of dragging clips around a timeline.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-typescript"></span> TypeScript</span>
+          <a href="https://github.com/Randroids-Dojo/CutScript" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
+      <!-- MagicDesktop -->
+      <div class="story-card">
+        <div class="story-card-glow"></div>
+        <div class="story-card-header">
+          <div class="story-card-icon" style="background: rgba(240, 81, 56, 0.15);">&#x1FA84;</div>
+        </div>
+        <h3>MagicDesktop</h3>
+        <p class="story-card-narrative">
+          A Swift macOS experiment in making the desktop feel scriptable and agent-friendly. MagicDesktop sits in the same family as CopyPath and the Mac automation work: small native utilities that reduce friction in the daily loop between developer, operating system, and AI assistant.
+        </p>
+        <div class="story-card-footer">
+          <span class="story-card-lang"><span class="lang-dot lang-swift"></span> Swift</span>
+          <a href="https://github.com/Randroids-Dojo/MagicDesktop" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
+        </div>
+      </div>
+
       <!-- Spiral -->
       <div class="story-card">
         <div class="story-card-glow"></div>
@@ -742,23 +878,6 @@
         <div class="story-card-footer">
           <span class="story-card-lang"><span class="lang-dot lang-python"></span> Python</span>
           <a href="https://github.com/Randroids-Dojo/skills" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
-        </div>
-      </div>
-
-      <!-- Godot-Claude-Skills -->
-      <div class="story-card">
-        <div class="story-card-glow"></div>
-        <div class="story-card-header">
-          <div class="story-card-icon" style="background: rgba(53, 114, 165, 0.15);">&#x1F3AF;</div>
-          <div class="story-card-stars">&#9733; 23</div>
-        </div>
-        <h3>Godot-Claude-Skills</h3>
-        <p class="story-card-narrative">
-          A focused pack of <span class="highlight">Claude Code skills for the Godot game engine</span>. Where the broader Skills repo aims wide, this one drills deep on Godot &mdash; export pipelines, scene authoring conventions, GDScript patterns, and the day-to-day rituals of shipping a Godot 4.x project. Drop it in and your AI agent stops guessing about <code>res://</code> paths and starts behaving like it has actually shipped a Godot game before.
-        </p>
-        <div class="story-card-footer">
-          <span class="story-card-lang"><span class="lang-dot lang-python"></span> Python</span>
-          <a href="https://github.com/Randroids-Dojo/Godot-Claude-Skills" target="_blank" rel="noopener" class="story-card-link">View on GitHub <span>&rarr;</span></a>
         </div>
       </div>
 
