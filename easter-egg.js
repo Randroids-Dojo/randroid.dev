@@ -1,5 +1,5 @@
 /* ============================================
-   EASTER EGG — Glass Break Game
+   EASTER EGG - Glass Break Game
    7 clicks on "building with AI agents" badge
    ============================================ */
 
@@ -318,7 +318,7 @@
         ballX += ballVX * steps;
         ballY += ballVY * steps;
 
-        // Wall bounces — crack at impact site
+        // Wall bounces - crack at impact site
         if (ballX - ballR < 0) {
           ballX = ballR; ballVX = Math.abs(ballVX);
           addCrack(ballR * 0.4, ballY);

@@ -1,5 +1,5 @@
 /* ============================================
-   RANDROID.DEV — Main Script
+   RANDROID.DEV - Main Script
    ============================================ */
 
 (function () {
@@ -284,7 +284,7 @@
     if (!message) return;
 
     var title = 'Site Feedback' + (name ? ' from ' + name : '');
-    var body = message + (name ? '\n\n— ' + name : '');
+    var body = message + (name ? '\n\n- ' + name : '');
 
     // Show sending state
     feedbackSubmit.disabled = true;
@@ -323,7 +323,7 @@
       feedbackSubmit.classList.remove('sending');
       feedbackSubmit.classList.add('error');
       var label = feedbackSubmit.querySelector('.feedback-submit-label');
-      label.textContent = 'Failed — try again';
+      label.textContent = 'Failed - try again';
       setTimeout(function () {
         feedbackSubmit.classList.remove('error');
         label.textContent = 'Send Feedback';
@@ -351,7 +351,7 @@
   });
 })();
 
-// --- Mi Casa Es Su Casa — name-based embed loader ---
+// --- Mi Casa Es Su Casa - name-based embed loader ---
 function loadMiCasa(event, form) {
   event.preventDefault();
   var input = form.querySelector('.mcesc-input');

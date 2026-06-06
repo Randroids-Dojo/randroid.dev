@@ -1,11 +1,11 @@
-# AGENTS.md — Site Conventions for AI Agents
+# AGENTS.md - Site Conventions for AI Agents
 
 ## Repos NOT to showcase on randroid.dev
 
 The following public repos exist but should NOT be added as story cards or playable cards on the site:
 
-- **Godot-Claude-Skills** (`Randroids-Dojo/Godot-Claude-Skills`) — old, not worth showcasing
-- **Rumored** (`Randroids-Dojo/Rumored`) — old, not worth showcasing
+- **Godot-Claude-Skills** (`Randroids-Dojo/Godot-Claude-Skills`) - old, not worth showcasing
+- **Rumored** (`Randroids-Dojo/Rumored`) - old, not worth showcasing
 
 ## Card Ordering
 

@@ -1,5 +1,5 @@
 /* ============================================
-   RANDROID.DEV — Portfolio Styles
+   RANDROID.DEV - Portfolio Styles
    ============================================ */
 
 /* --- Reset & Base --- */
@@ -552,7 +552,7 @@ body::before {
   font-weight: 500;
 }
 
-/* Mi Casa Es Su Casa — name entry placeholder */
+/* Mi Casa Es Su Casa - name entry placeholder */
 .mcesc-placeholder {
   flex-direction: column;
   cursor: default;
