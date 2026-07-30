@@ -1133,6 +1133,23 @@
 
     <div class="blog-timeline">
 
+      <!-- Post 6 -->
+      <article class="blog-card" data-post="post-6">
+        <div class="blog-card-date-col">
+          <div class="blog-card-date-pip"></div>
+          <time class="blog-card-date" datetime="2026-07-30">July 30, 2026</time>
+        </div>
+        <div class="blog-card-body">
+          <img class="blog-card-thumb blog-card-thumb-full" src="assets/blog/steam-controller/openpuck-halo-thumbnail.png" alt="Halo gameplay beside the new Steam Controller and the question Steam Controller fixed" loading="lazy">
+          <h3 class="blog-card-title">I Was Researching OpenPuck for Xbox. It Simplified Halo on PC First.</h3>
+          <p class="blog-card-excerpt">I already had Halo working through a software bridge. The surprise was that OpenPuck made the PC setup cleaner before it ever reached Series X.</p>
+          <div class="blog-card-meta">
+            <span class="blog-card-read-time">5 min read</span>
+            <span class="blog-card-cta">Read post <span class="arrow">&rarr;</span></span>
+          </div>
+        </div>
+      </article>
+
       <!-- Post 1 -->
       <article class="blog-card" data-post="post-1">
         <div class="blog-card-date-col">
@@ -1233,6 +1250,67 @@
   </div>
 
   <!-- Blog post content (hidden, loaded into reader) -->
+  <template id="post-6">
+    <time datetime="2026-07-30">July 30, 2026</time>
+    <h1>I Was Researching OpenPuck for Xbox. It Simplified Halo on PC First.</h1>
+    <img class="blog-hero-img" src="assets/blog/steam-controller/openpuck-halo-thumbnail.png" alt="Halo gameplay beside the new Steam Controller and the question Steam Controller fixed">
+    <p>I went into this knowing there had to be some way to use the new Steam Controller with Halo: Campaign Evolved through the Xbox app on PC. I also suspected OpenPuck might eventually help me connect it to an actual Xbox. What I did not know was whether OpenPuck offered any benefit on PC.</p>
+    <p>That became the surprise. I already had Halo working through a software bridge, but OpenPuck replaced most of that chain with a tiny receiver that made the Steam Controller appear to Windows as an Xbox 360 controller. Games read that standardized controller through XInput, Microsoft's interface for Xbox-style gamepads. Its first clear win was not on Xbox Series X. It was making the PC setup simpler.</p>
+
+    <img class="blog-inline-img" src="https://i.ytimg.com/vi/UsmNnRveo6M/maxresdefault.jpg" alt="Holding the new Steam Controller during the hands-on review" loading="lazy">
+
+    <h2>The PC Problem</h2>
+    <p>Steam Input can translate controller inputs for games launched through Steam. Halo was launched through the Xbox app, outside the normal path where Steam Input reliably attaches a per-game controller layout. It kept receiving the Steam Controller's desktop mouse-and-keyboard layout instead of standard XInput gamepad input.</p>
+    <p>My first working answer was software. <strong>SISR</strong> uses <strong>VIIPER and USBIP</strong> to expose Steam Input as a system-level Xbox 360 controller that Halo can recognize. It worked, but it meant keeping Steam, SISR, and the virtual controller bridge running with the right layout.</p>
+
+    <h2>A Tiny Hardware Bridge</h2>
+    <p>I already knew <a href="https://github.com/safijari/openpuck" target="_blank" rel="noopener">OpenPuck</a> might help me connect the Steam Controller to an Xbox, so I tested whether it could also simplify the PC setup. OpenPuck is open-source firmware for a small programmable USB radio built around Nordic's multiprotocol nRF52840 chip. My tested receiver was the <a href="https://www.adafruit.com/product/5199" target="_blank" rel="noopener">Adafruit product 5199 / Raytac MDBT50Q-RX</a>. It is sold as Bluetooth Low Energy hardware because the chip supports BLE, but it is not a normal USB Bluetooth adapter.</p>
+    <p>OpenPuck reflashes that programmable receiver to use a low-latency 2.4 GHz radio link similar to Valve's puck. In Xbox mode, the OpenPuck receiver appears to Windows as an Xbox 360 controller, which games can read through XInput.</p>
+    <p>One of the coolest parts is how much switching the controller can do without digging through menus. The Steam Controller itself, independent of OpenPuck, remembers two puck pairing slots: hold <strong>RB + A + Steam</strong> while turning it on for slot 1 on the right, or <strong>LB + A + Steam</strong> for slot 2 on the left. OpenPuck adds its own shortcuts. With its default mappings, holding all four rear buttons and pressing <strong>X</strong> switches to XInput mode, while pressing <strong>A</strong> returns to Steam puck mode. Together, those controls let the same controller move between receivers and configurations through a few deliberate button chords.</p>
+    <p>That removed most of the software dance. I flashed OpenPuck onto a Raytac MDBT50Q-RX receiver, paired the controller to it, switched it to Xbox mode, and restarted Halo. The menus changed to Xbox button prompts, and the controller behaved like a gamepad instead of a mouse.</p>
+    <img class="blog-inline-img" src="https://i.ytimg.com/vi/TG4r_01_mgA/maxresdefault.jpg" alt="Halo Campaign Evolved showing Xbox controller prompts during the Steam Controller test" loading="lazy">
+    <p>You can see the broader controller test in <a href="https://www.youtube.com/watch?v=UsmNnRveo6M" target="_blank" rel="noopener"><em>Can the Steam Controller ACTUALLY Replace a Mouse?</em></a>, the original OpenPuck research in <a href="https://www.youtube.com/watch?v=HAL4o5r1RxE" target="_blank" rel="noopener">the July build recap stream</a>, and the controller running through Halo in <a href="https://www.youtube.com/watch?v=TG4r_01_mgA" target="_blank" rel="noopener">the full Halo stream</a>.</p>
+
+    <h2>Then the Series X Said No</h2>
+    <p>I initially hoped the same XInput mode would carry straight over to the console. It did not. That failure exposed the real distinction: looking like an Xbox controller to a Windows game is not the same as satisfying the authentication expected by a retail Xbox.</p>
+    <p>OpenPuck handled the Steam Controller's wireless link and converted its input into different USB controller modes. It did not provide the console-facing compatibility layer. For that, I added the second adapter: a <a href="https://www.mayflash.com/product/magic_x.html" target="_blank" rel="noopener">Mayflash Magic-X</a>.</p>
+
+    <h2>The Working Two-Adapter Chain</h2>
+    <p><strong>Steam Controller &rarr; OpenPuck in persistent PS3 mode &rarr; Magic-X in blue Xbox mode &rarr; Xbox Series X</strong></p>
+    <img class="blog-inline-img" src="assets/blog/steam-controller/xbox-series-x-working-setup.png" alt="Verified retail Xbox setup showing OpenPuck, persistent PS3 mode, Magic-X, and the complete adapter stack" loading="lazy">
+    <p>The mode matters. OpenPuck's Xbox 360 mode still failed through Magic-X. Persistent PS3 mode worked because Magic-X accepts a wired DualShock 3 controller and converts that input into the Xbox-compatible protocol, including console authentication.</p>
+    <p>The result is a working Steam Controller on a retail Xbox Series X. OpenPuck keeps the controller connection wireless, while Magic-X handles compatibility with the console.</p>
+
+    <h2>The Useful Lesson</h2>
+    <p>What looked like one compatibility problem was really three:</p>
+    <ul>
+      <li><strong>Radio:</strong> OpenPuck talks to the Steam Controller.</li>
+      <li><strong>Input protocol:</strong> OpenPuck can appear to Windows as an Xbox 360 controller or to an adapter as a PS3 controller.</li>
+      <li><strong>Console compatibility:</strong> Magic-X provides the final translation and authentication for Xbox.</li>
+    </ul>
+    <h2>Hardware, Code, and Setup Guides</h2>
+    <p>The two adapters used for the Series X setup are:</p>
+    <ul>
+      <li><a href="https://www.adafruit.com/product/5199" target="_blank" rel="noopener">Adafruit product 5199 / Raytac MDBT50Q-RX</a>, the programmable USB receiver running OpenPuck</li>
+      <li><a href="https://www.mayflash.com/product/magic_x.html" target="_blank" rel="noopener">Mayflash Magic-X</a>, the adapter providing the Xbox-compatible side of the chain</li>
+    </ul>
+    <p>The software and firmware projects behind the two setup paths are:</p>
+    <ul>
+      <li><a href="https://github.com/safijari/openpuck" target="_blank" rel="noopener">OpenPuck firmware repository</a> and its <a href="https://safijari.github.io/openpuck/" target="_blank" rel="noopener">WebUSB configurator</a></li>
+      <li><a href="https://github.com/Alia5/SISR" target="_blank" rel="noopener">SISR</a>, which redirects Steam Input to system-level virtual controllers</li>
+      <li><a href="https://github.com/Alia5/VIIPER" target="_blank" rel="noopener">VIIPER</a>, the virtual input-device backend used by SISR</li>
+      <li><a href="https://github.com/vadimgrn/usbip-win2" target="_blank" rel="noopener">usbip-win2</a>, the Windows USB/IP driver used by that virtual-controller path</li>
+    </ul>
+    <p>If you want to reproduce either setup, I wrote down the exact hardware, modes, startup order, verification steps, and rollback notes in the Randroid's Dojo Knowledgebase:</p>
+    <ul>
+      <li><a href="https://github.com/Randroids-Dojo/Knowledgebase/blob/main/guides/Steam-Controller-XInput-on-Windows.md" target="_blank" rel="noopener">Use a Steam Controller as an Xbox/XInput Controller on Windows</a></li>
+      <li><a href="https://github.com/Randroids-Dojo/Knowledgebase/blob/main/guides/Steam-Controller-on-Retail-Xbox.md" target="_blank" rel="noopener">Use a Steam Controller on a Retail Xbox with OpenPuck and Magic-X</a></li>
+      <li><a href="https://github.com/Randroids-Dojo/Knowledgebase" target="_blank" rel="noopener">Browse Randroid's Knowledgebase</a></li>
+      <li><a href="https://help.steampowered.com/en/faqs/view/33E8-5EDF-24E6-4CFB" target="_blank" rel="noopener">Valve's Steam Controller pairing and connectivity guide</a></li>
+    </ul>
+    <p>The fun part was finally playing with the controller. The valuable part was learning exactly why it had failed at each step.</p>
+  </template>
+
   <template id="post-1">
     <time datetime="2025-05-24">May 24, 2025</time>
     <h1>Vibe Coding + Software Engineering: A Partnership, Not a Competition</h1>

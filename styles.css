@@ -1456,6 +1456,12 @@ body::before {
   transition: transform var(--transition), opacity var(--transition);
 }
 
+.blog-card-thumb-full {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
 .blog-card:hover .blog-card-thumb {
   transform: scale(1.02);
   opacity: 0.9;
